@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<h3 align="center">Transactions</h3>
+<ul>
+    {% for transaction in transactions %}
+    <li>{{ transaction.date }}: {{ transaction.name }} - ${{ transaction.amount }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

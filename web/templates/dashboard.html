@@ -3,5 +3,9 @@
 
 {% block content %}
 <h3 align="center">Dashboard</h3>
-<h4 align="center" >Welcome to your dashboard, {{ current_user.first_name }} {{ current_user.last_name }}</h4>
+<h4 align="center">Welcome to your dashboard, {{ current_user.first_name }} {{ current_user.last_name }}</h4>
+<button id='link-button' class="btn btn-primary">Link bank account</button>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script src="{{ url_for('static', filename='js/plaid.js') }}"></script>
+
 {% endblock %}
