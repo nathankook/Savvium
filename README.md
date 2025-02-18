@@ -1,9 +1,17 @@
 # Savvium
 Comp 585 - Group Project
 
-How to run:
-1. Install requirement with 'pip install -r requirements'
+## How to Run
+1. Install requirements with `pip install -r requirements.txt`
 2. Create a Virtual environment:
-    a. macOS/Linux (zsh/bash): 'source venv/bin/activate'
-    b. Windows (PowerShell): 'venv\Scripts\Activate.ps1'
-3. Run with 'python main.py'
+
+   - **macOS/Linux (zsh/bash):**  
+     ```sh
+     source venv/bin/activate
+     ```
+   - **Windows (PowerShell):**  
+     ```powershell
+     venv\Scripts\Activate.ps1
+     ```
+
+3. Run with `python main.py`
