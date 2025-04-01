@@ -33,11 +33,11 @@ export default function SignUpScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
-      <TextInput placeholder="Name" style={styles.input} onChangeText={setName} />
-      <TextInput placeholder="Last Name" style={styles.input} onChangeText={setLastName} />
-      <TextInput placeholder="Phone Number" style={styles.input} keyboardType="phone-pad" onChangeText={setPhone} />
-      <TextInput placeholder="Email" style={styles.input} keyboardType="email-address" onChangeText={setEmail} />
-      <TextInput placeholder="Password" style={styles.input} secureTextEntry onChangeText={setPassword} />
+      <TextInput placeholder="Name" placeholderTextColor="#9E9E9E" style={styles.input} onChangeText={setName} />
+      <TextInput placeholder="Last Name" placeholderTextColor="#9E9E9E" style={styles.input} onChangeText={setLastName} />
+      <TextInput placeholder="Phone Number" placeholderTextColor="#9E9E9E" style={styles.input} keyboardType="phone-pad" onChangeText={setPhone} />
+      <TextInput placeholder="Email" placeholderTextColor="#9E9E9E" style={styles.input} keyboardType="email-address" onChangeText={setEmail} />
+      <TextInput placeholder="Password" placeholderTextColor="#9E9E9E" style={styles.input} secureTextEntry onChangeText={setPassword} />
       <CustomButton title="Sign Up" onPress={handleSignUp} />
     </View>
   );
