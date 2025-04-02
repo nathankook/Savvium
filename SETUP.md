@@ -41,11 +41,34 @@ Make sure to install the following:
     ```
 - Install Flask in the virtual environment and any other packages:
     ```sh
-    pip install flask flask-cors
+    pip install flask flask-cors flask-sqlalchemy
     ```
 - To run the server:
     ```sh
     python app.py
     ``` 
 
+## **4. Starting the application**
+- Open two separate windows, one for the SavviumClient and one for the SavviumServer
+
+- Start in the SavviumServer window, and run in the terminal:
+
+    - **macOS/Linux (zsh/bash):**  
+        ```sh
+        source venv/bin/activate
+        ```
+    - **Windows (PowerShell):**  
+        ```powershell
+        venv\Scripts\Activate.ps1
+        ```
+
+    - Then to start the server, run:
+        ```sh
+        python app.py
+        ```
+
+- Then go in the SavviumClient window, and run in the terminal:
+    ```sh
+    npx expo start
+    ```
 
