@@ -2,7 +2,3 @@
 venv/
 # Ignore dotenv file
 .env
-# Ignore pycache folder
-__pycache__/
-*.py[cod]
-*$py.class
