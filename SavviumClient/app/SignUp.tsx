@@ -1,5 +1,6 @@
 import { View, Text, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import { useState } from 'react';
+import { router } from 'expo-router';
 import CustomButton from './components/CustomButton';
 import { LOCAL_HOST } from '../environment';
 
@@ -102,7 +103,13 @@ export default function SignUpScreen() {
       });
 
       const data = await response.json();
-      alert(data.message || 'Signed up successfully');
+
+      if (response.ok) {
+        alert(data.message || 'Signed up successfully');
+        router.push('/Login');
+      } else {
+        alert(data.message || 'Failed to sign up');
+      }
     } catch (error) {
       alert('Something went wrong');
     }
