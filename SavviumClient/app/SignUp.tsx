@@ -1,6 +1,7 @@
 import { View, Text, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import { useState } from 'react';
 import CustomButton from './components/CustomButton';
+import { LOCAL_HOST } from '../environment';
 
 export default function SignUpScreen() {
   // State variables to store user info
@@ -88,7 +89,7 @@ export default function SignUpScreen() {
     }
     // Submit form data to backend
     try {
-      const response = await fetch('http://192.168.1.153:5000/signup', {
+      const response = await fetch(`${LOCAL_HOST}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

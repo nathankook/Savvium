@@ -2,6 +2,7 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import CustomButton from './components/CustomButton';
+import { LOCAL_HOST } from '../environment';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.1.153:5000/login', {
+      const response = await fetch(`${LOCAL_HOST}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
