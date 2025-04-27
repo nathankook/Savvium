@@ -15,6 +15,7 @@ app.register_blueprint(plaid_bp)
 def hello_world():
     return "Hello, Savvium Server!"
 
+# Create a new category
 @app.route('/categories', methods=['POST'])
 def create_category():
     data = request.get_json()
@@ -34,6 +35,7 @@ def create_category():
         "color": new_cat.color
     }})
 
+# Get all categories for a user
 @app.route('/categories/<int:user_id>', methods=['GET'])
 def get_categories(user_id):
     categories = BudgetCategory.query.filter_by(user_id=user_id).all()
@@ -46,6 +48,7 @@ def get_categories(user_id):
     } for c in categories]
     return jsonify(result)
 
+# Create a new expense
 @app.route('/expenses', methods=['POST'])
 def create_expense():
     data = request.get_json()
@@ -56,16 +59,16 @@ def create_expense():
     )
     db.session.add(new_expense)
     db.session.commit()
-    return jsonify({"message": "Expense created", "expense": {
+    return jsonify({"message": "Expense created successfully", "expense": {
         "id": new_expense.id,
         "category_id": new_expense.category_id,
         "name": new_expense.name,
         "amount": new_expense.amount
     }})
 
-@app.route('/expenses/<int:user_id>', methods=['GET'])
+# Get all expenses for a specific user
+@app.route('/users/<int:user_id>/expenses', methods=['GET'])
 def get_user_expenses(user_id):
-    # Get expenses tied to the user's categories
     expenses = Expense.query.join(BudgetCategory).filter(BudgetCategory.user_id == user_id).all()
     result = [{
         "id": e.id,
@@ -76,8 +79,9 @@ def get_user_expenses(user_id):
     } for e in expenses]
     return jsonify(result)
 
-@app.route('/expenses/<int:category_id>', methods=['GET'])
-def get_expenses(category_id):
+# Get all expenses for a specific category
+@app.route('/categories/<int:category_id>/expenses', methods=['GET'])
+def get_expenses_by_category(category_id):
     expenses = Expense.query.filter_by(category_id=category_id).all()
     result = [{
         "id": e.id,
@@ -87,6 +91,10 @@ def get_expenses(category_id):
     } for e in expenses]
     return jsonify(result)
 
+
+
+
+# Delete a category (and associated expenses)
 @app.route('/categories/<int:category_id>', methods=['DELETE'])
 def delete_category(category_id):
     category = BudgetCategory.query.get_or_404(category_id)
@@ -94,6 +102,20 @@ def delete_category(category_id):
     db.session.commit()
     return jsonify({"message": "Category and associated expenses deleted."})
 
+# Update a category (e.g., edit budget)
+@app.route('/categories/<int:id>', methods=['PATCH'])
+def update_category(id):
+    data = request.get_json()
+    category = BudgetCategory.query.get(id)
+
+    if not category:
+        return jsonify({'error': 'Category not found'}), 404
+
+    if 'budget' in data:
+        category.budget = data['budget']
+
+    db.session.commit()
+    return jsonify({'message': 'Category updated successfully'})
 
 if __name__ == '__main__':
     with app.app_context():

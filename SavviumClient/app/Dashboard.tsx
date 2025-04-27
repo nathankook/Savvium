@@ -12,6 +12,9 @@ import { useState, useRef, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { LOCAL_HOST } from "../environment";
+import { ProgressChart } from "react-native-chart-kit";
+
+const screenWidth = Dimensions.get("window").width;
 
 type Category = {
   id: number;
@@ -29,8 +32,6 @@ type Expense = {
   category_name: string;
 };
 
-const screenWidth = Dimensions.get("window").width;
-
 export default function DashboardScreen() {
   const { name, refresh } = useLocalSearchParams<{ name?: string; refresh?: string }>();
   const sidebarX = useRef(new Animated.Value(-250)).current;
@@ -39,9 +40,6 @@ export default function DashboardScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-
-  const trackWidth = screenWidth * 0.9;
-  const indicatorWidth = trackWidth * 0.2;
 
   const fetchCategories = async (id: string) => {
     try {
@@ -53,15 +51,19 @@ export default function DashboardScreen() {
     }
   };
 
-  const fetchExpenses = async (id: string) => {
+  const fetchExpenses = async (userId: string) => {
     try {
-      const response = await fetch(`${LOCAL_HOST}/expenses/${id}`);
+      const response = await fetch(`${LOCAL_HOST}/users/${userId}/expenses`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setExpenses(data);
     } catch (error) {
       console.error("Error fetching expenses:", error);
     }
   };
+  
 
   const initializeData = async () => {
     const storedUserId = await AsyncStorage.getItem('userId');
@@ -122,10 +124,35 @@ export default function DashboardScreen() {
     });
   };
 
-  const totalExpenses = categories.reduce(
+  const totalBudget = categories.reduce(
     (sum, cat) => sum + (cat.budget ?? 0),
     0
   );
+
+  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  
+  const isAnyCategoryOverBudget = categories.some((category) => {
+    const categoryExpenses = expenses.filter((expense) => expense.category_id === category.id);
+    const totalCategorySpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    return category.budget !== undefined && totalCategorySpent > category.budget;
+  });
+
+  const overBudgetCategory = categories.find((category) => {
+    const categoryExpenses = expenses.filter((expense) => expense.category_id === category.id);
+    const totalCategorySpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    return category.budget !== undefined && totalCategorySpent > category.budget;
+  });
+
+  const overBudgetAmount = overBudgetCategory
+    ? expenses
+        .filter((expense) => expense.category_id === overBudgetCategory.id)
+        .reduce((sum, exp) => sum + exp.amount, 0) - (overBudgetCategory.budget ?? 0)
+    : 0;
+
+  const progress = totalBudget > 0 ? Math.min(totalSpent / totalBudget, 1) : 0;
+
+  const displayedSpent = Number.isFinite(totalSpent) ? totalSpent.toFixed(0) : "0";
+  const displayedBudget = Number.isFinite(totalBudget) && totalBudget !== 0 ? totalBudget.toFixed(0) : "0";
 
   const scrollableWidth = Math.max(
     0,
@@ -166,8 +193,53 @@ export default function DashboardScreen() {
         <TouchableOpacity style={styles.backdrop} onPress={closeSidebar} />
       )}
 
-      {/* Total Expenses */}
-      <Text style={styles.totalExpenses}>${totalExpenses.toFixed(2)}</Text>
+      {/* Progress Ring Chart */}
+      <View style={{ alignItems: "center", marginVertical: 20 }}>
+        <View style={{ width: 220, height: 220, justifyContent: "center", alignItems: "center" }}>
+          <ProgressChart
+            data={{
+              labels: [],
+              data: [progress],
+            }}
+            width={220}
+            height={220}
+            strokeWidth={16}
+            radius={80}
+            chartConfig={{
+              backgroundGradientFrom: "#fff",
+              backgroundGradientTo: "#fff",
+              color: (opacity = 1) =>
+                isAnyCategoryOverBudget
+                  ? `rgba(251, 146, 60, ${opacity})` // Orange
+                  : `rgba(16, 185, 129, ${opacity})`, // Green
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            }}
+            hideLegend={true}
+          />
+
+          {/* Centered Text */}
+          <View style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              {`${displayedSpent} / ${displayedBudget}`}
+            </Text>
+          </View>
+        </View>
+
+        {/* Over Budget Message */}
+        {overBudgetCategory && (
+          <Text style={{ fontSize: 16, color: 'orange', marginTop: 10 }}>
+            Over budget by ${overBudgetAmount.toFixed(2)} in {overBudgetCategory.name}
+          </Text>
+        )}
+      </View>
 
       {/* Category Carousel */}
       <View style={styles.carouselContainer}>
@@ -229,7 +301,6 @@ export default function DashboardScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   navBar: {
@@ -266,13 +337,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     zIndex: 4,
   },
-  totalExpenses: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#111",
-    textAlign: "center",
-    marginVertical: 20,
-  },
   carouselContainer: { marginTop: 10 },
   categoryList: { paddingHorizontal: 10 },
   addCategoryCard: {
@@ -297,27 +361,6 @@ const styles = StyleSheet.create({
   },
   categoryName: { color: "#fff", fontSize: 14, fontWeight: "bold" },
   categoryBudget: { color: "#fff", fontSize: 12 },
-  scrollBarContainer: {
-    height: 4,
-    backgroundColor: "transparent",
-    width: "90%",
-    alignSelf: "center",
-    marginTop: 10,
-    position: "relative",
-  },
-  scrollBarBackground: {
-    position: "absolute",
-    height: 4,
-    backgroundColor: "#ccc",
-    width: "100%",
-    borderRadius: 2,
-  },
-  scrollBarIndicator: {
-    position: "absolute",
-    height: 4,
-    backgroundColor: "black",
-    borderRadius: 2,
-  },
   expensesTitle: {
     fontSize: 20,
     fontWeight: "bold",
