@@ -1,76 +1,73 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CustomButton from './components/CustomButton';
 import { LOCAL_HOST } from '../environment';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    const checkIfLoggedIn = async () => {
-      try {
-        const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
-        if (isLoggedIn === 'true') {
-          console.log('Already logged in, redirecting...');
-          router.replace('/Dashboard');
-        }
-      } catch (error) {
-        console.error('Error checking login state', error);
-      }
-    };
-
-    checkIfLoggedIn();
-  }, []);
-
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Please fill in all fields.');
+      return;
+    }
+
     try {
       const response = await fetch(`${LOCAL_HOST}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
-      console.log('Login response:', data);
 
       if (response.ok) {
-        console.log('Navigating to /dashboard with name:', data.name);
-        
-        // Save login state
+        // Save login state and userId into AsyncStorage
         await AsyncStorage.setItem('isLoggedIn', 'true');
+        await AsyncStorage.setItem('userId', data.user.id.toString());
 
-        router.replace({ pathname: '/Dashboard', params: { name: data.name } });
+        // Redirect to Dashboard, passing name (optional)
+        router.replace({
+          pathname: '/Dashboard',
+          params: { name: data.user.name }
+        });
       } else {
-        alert(data.message || 'Login failed');
+        Alert.alert(data.message || 'Login failed');
       }
-    } catch (error) {
-      console.error('Login fetch error:', error);
-      alert('Something went wrong');
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Something went wrong.');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
+
       <TextInput
+        style={styles.input}
         placeholder="Email"
         placeholderTextColor="#9E9E9E"
-        style={styles.input}
         onChangeText={setEmail}
+        value={email}
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
       <TextInput
+        style={styles.input}
         placeholder="Password"
         placeholderTextColor="#9E9E9E"
-        style={styles.input}
-        secureTextEntry
         onChangeText={setPassword}
+        value={password}
+        secureTextEntry
       />
-      <CustomButton title="Login" onPress={handleLogin} />
+
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginText}>Login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -78,26 +75,34 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
     backgroundColor: '#111827',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#fff',
+    textAlign: 'center',
+    marginBottom: 30,
   },
   input: {
-    width: '100%',
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    borderRadius: 5,
     backgroundColor: '#1F2937',
     color: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  loginButton: {
+    backgroundColor: '#4F46E5',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  loginText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

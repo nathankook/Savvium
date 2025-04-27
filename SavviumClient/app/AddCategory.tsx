@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LOCAL_HOST } from '../environment';
 
 const presetColors = ['#7C3AED', '#0EA5E9', '#F59E0B', '#EF4444', '#10B981'];
@@ -18,11 +19,17 @@ export default function AddCategoryScreen() {
     }
 
     try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        Alert.alert('User not logged in.');
+        return;
+      }
+
       const response = await fetch(`${LOCAL_HOST}/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: 1, // hardcoded for now, replace with actual user ID
+          user_id: parseInt(userId),
           name,
           budget: parseFloat(budget),
           color: selectedColor,
@@ -43,6 +50,7 @@ export default function AddCategoryScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Top Nav */}
       <View style={styles.navBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
           <Ionicons name="arrow-back" size={28} color="white" />
@@ -50,32 +58,42 @@ export default function AddCategoryScreen() {
         <Text style={styles.title}>Add Category</Text>
       </View>
 
+      {/* Category Name Input */}
       <TextInput
         style={styles.input}
         placeholder="Category Name"
         placeholderTextColor="#9E9E9E"
         onChangeText={setName}
+        value={name}
       />
 
+      {/* Budget Input */}
       <TextInput
         style={styles.input}
         placeholder="Monthly Budget"
         placeholderTextColor="#9E9E9E"
         keyboardType="numeric"
         onChangeText={setBudget}
+        value={budget}
       />
 
+      {/* Color Picker */}
       <Text style={styles.label}>Choose a Color</Text>
       <View style={styles.colorPicker}>
         {presetColors.map((color) => (
           <TouchableOpacity
             key={color}
-            style={[styles.colorCircle, { backgroundColor: color }, selectedColor === color && styles.selectedCircle]}
+            style={[
+              styles.colorCircle,
+              { backgroundColor: color },
+              selectedColor === color && styles.selectedCircle
+            ]}
             onPress={() => setSelectedColor(color)}
           />
         ))}
       </View>
 
+      {/* Save Button */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveText}>Save</Text>
       </TouchableOpacity>

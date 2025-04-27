@@ -38,13 +38,14 @@ export default function DashboardScreen() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const trackWidth = screenWidth * 0.9;
   const indicatorWidth = trackWidth * 0.2;
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (id: string) => {
     try {
-      const response = await fetch(`${LOCAL_HOST}/categories/1`);
+      const response = await fetch(`${LOCAL_HOST}/categories/${id}`);
       const data = await response.json();
       setCategories(data);
     } catch (error) {
@@ -52,9 +53,9 @@ export default function DashboardScreen() {
     }
   };
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = async (id: string) => {
     try {
-      const response = await fetch(`${LOCAL_HOST}/expenses`);
+      const response = await fetch(`${LOCAL_HOST}/expenses/${id}`);
       const data = await response.json();
       setExpenses(data);
     } catch (error) {
@@ -62,10 +63,18 @@ export default function DashboardScreen() {
     }
   };
 
+  const initializeData = async () => {
+    const storedUserId = await AsyncStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+      await fetchCategories(storedUserId);
+      await fetchExpenses(storedUserId);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      fetchCategories();
-      fetchExpenses();
+      initializeData();
     }, [refresh])
   );
 
@@ -91,6 +100,7 @@ export default function DashboardScreen() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("isLoggedIn");
+      await AsyncStorage.removeItem("userId");
       router.replace("/Login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -197,30 +207,6 @@ export default function DashboardScreen() {
             )
           }
         />
-
-        {/* ScrollBar */}
-        {needsScroll && (
-          <View style={styles.scrollBarContainer}>
-            <View style={styles.scrollBarBackground} />
-            <Animated.View
-              style={[
-                styles.scrollBarIndicator,
-                {
-                  width: "20%",
-                  transform: [
-                    {
-                      translateX: scrollX.interpolate({
-                        inputRange: [0, scrollableWidth],
-                        outputRange: [0, trackWidth - indicatorWidth],
-                        extrapolate: "clamp",
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            />
-          </View>
-        )}
       </View>
 
       {/* Expenses List */}
@@ -242,6 +228,7 @@ export default function DashboardScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
