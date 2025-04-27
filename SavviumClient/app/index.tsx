@@ -80,6 +80,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#0A2463',
   },
   background: {
     position: 'absolute',
@@ -105,33 +106,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   welcomeText: {
-    fontSize: 32,
+    fontSize: width > 600 ? 36 : 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   tagline: {
-    fontSize: 18,
+    fontSize: width > 600 ? 20 : 18,
     color: '#E6F0FF',
     marginBottom: 12,
     textAlign: 'center',
     opacity: 0.8,
   },
   featuresContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: width > 600 ? 'row' : 'column',
+    justifyContent: width > 600 ? 'space-between' : 'center',
     width: '100%',
     marginVertical: 16,
-    flexWrap: 'wrap',
   },
   featureItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    width: width > 600 ? '30%' : '100%',
-    marginBottom: width > 600 ? 0 : 16,
+    width: width > 600 ? '48%' : '100%',
+    marginBottom: 16,
     shadowColor: '#000000',
     shadowOpacity: 0.5,
     shadowOffset: { width: 0, height: 4 },
@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginBottom: 40,
     alignItems: 'center',
+    width: '100%',
   },
   loginButton: {
     backgroundColor: 'transparent',
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
     borderRadius: 10,
     marginBottom: 12,
-    width: '80%',
+    width: width > 600 ? '60%' : '80%',
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
     elevation: 4,
-    width: '80%',
+    width: width > 600 ? '60%' : '80%',
   },
   signupButtonText: {
     color: '#FFFFFF',
