@@ -1,12 +1,29 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './components/CustomButton';
 import { LOCAL_HOST } from '../environment';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const checkIfLoggedIn = async () => {
+      try {
+        const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+        if (isLoggedIn === 'true') {
+          console.log('Already logged in, redirecting...');
+          router.replace('/Dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking login state', error);
+      }
+    };
+
+    checkIfLoggedIn();
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -21,7 +38,11 @@ export default function LoginScreen() {
 
       if (response.ok) {
         console.log('Navigating to /dashboard with name:', data.name);
-        router.push({ pathname: '/Dashboard', params: { name: data.name } });
+        
+        // Save login state
+        await AsyncStorage.setItem('isLoggedIn', 'true');
+
+        router.replace({ pathname: '/Dashboard', params: { name: data.name } });
       } else {
         alert(data.message || 'Login failed');
       }
@@ -60,11 +81,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    backgroundColor: '#111827',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#fff',
   },
   input: {
     width: '100%',
@@ -74,5 +97,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     borderRadius: 5,
+    backgroundColor: '#1F2937',
+    color: '#fff',
   },
 });
