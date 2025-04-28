@@ -1,5 +1,4 @@
 import { View, Text, TextInput, StyleSheet, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { LOCAL_HOST } from '../environment';
@@ -159,12 +158,6 @@ export default function SignUpScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content"></StatusBar>
-      <LinearGradient
-        colors={['#0A2463', '#3E92CC']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
       <View style={styles.container}>
         <Text style={styles.title}>Sign Up</Text>
         <View style={styles.formContainer}>
@@ -260,7 +253,7 @@ export default function SignUpScreen() {
               Log In
             </Text>
           </Text>
-        </View>
+          </View>
       </View>
     </SafeAreaView>
   );
@@ -271,20 +264,13 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0A2463',
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    backgroundColor: '#111827',
   },
   container: {
     flex: 1,
+    backgroundColor: '#111827',
+    paddingHorizontal: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
   },
   title: {
     fontSize: width > 600 ? 36 : 32,
@@ -296,6 +282,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: width > 600 ? '70%' : '100%',
     marginBottom: 24,
+    alignSelf: 'center',
   },
   input: {
     width: '100%',
@@ -305,7 +292,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#1F2937',
     color: '#FFFFFF',
     fontSize: 16,
   },
@@ -329,15 +316,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: width > 600 ? '70%' : '100%',
     alignItems: 'center',
+    alignSelf: 'center',
   },
   signupButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#4F46E5',
     borderRadius: 10,
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 4,
     width: '100%',
     height: 54,
     justifyContent: 'center',
@@ -354,7 +337,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginLink: {
-    color: '#FF6B6B',
+    color: '#4F46E5',
     fontWeight: 'bold',
   },
 });

@@ -1,24 +1,17 @@
 import { View, Text, StyleSheet, Image, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={['#0A2463', '#3E92CC']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
       
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
             source={require('../assets/images/SavviumLogo.png')}
-            style={styles.logo}
+            style={[styles.logo, { tintColor: '#FFFFFF' }]}
             resizeMode="contain"
           />
         </View>
@@ -66,7 +59,7 @@ const FeatureItem = ({ icon, title, description }) => {
   return (
     <View style={styles.featureItem}>
       <View style={styles.iconContainer}>
-        <Ionicons name={icon} size={24} color="#0A2463" />
+        <Ionicons name={icon} size={24} color="#4F46E5" />
       </View>
       <Text style={styles.featureTitle}>{title}</Text>
       <Text style={styles.featureDescription}>{description}</Text>
@@ -79,18 +72,13 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0A2463',
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    backgroundColor: '#111827',
   },
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    backgroundColor: '#111827',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
@@ -107,7 +95,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: width > 600 ? 36 : 32,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#E6F0FF',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -125,20 +113,15 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   featureItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: '#2c3441',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     width: width > 600 ? '48%' : '100%',
     marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOpacity: 0.5,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 4,
   },
   iconContainer: {
-    backgroundColor: '#E6F0FF',
+    backgroundColor: '#374151',
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -149,12 +132,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0A2463',
+    color: '#E6F0FF',
     marginBottom: 5,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#E6F0FF',
+    opacity: 0.6,
     textAlign: 'center',
   },
   buttonContainer: {
@@ -163,19 +147,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   loginButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+    backgroundColor: '#4F46E5',
     borderRadius: 10,
-    marginBottom: 12,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 4,
     width: width > 600 ? '70%' : '100%',
     height: 54,
-    justifyContent: 'center',
+    marginBottom: 20,
+    paddingVertical: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -183,13 +162,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   signupButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#4F46E5',
     borderRadius: 10,
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 4,
     width: width > 600 ? '70%' : '100%',
     height: 54,
     paddingVertical: 12,
