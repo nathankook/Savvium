@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const [checkingLogin, setCheckingLogin] = useState(true);
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
@@ -17,6 +18,10 @@ export default function HomeScreen() {
     };
     checkLoginStatus();
   }, []);
+
+  if (checkingLogin) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
