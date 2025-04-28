@@ -1,13 +1,12 @@
-import { View, Text, StyleSheet, Image, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import CustomButton from './components/CustomButton';
 
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={['#0A2463', '#3E92CC']}
         style={styles.background}
@@ -43,19 +42,19 @@ export default function HomeScreen() {
         </View>
         
         <View style={styles.buttonContainer}>
-          <CustomButton
-            title="Log In"
+          <TouchableOpacity
             onPress={() => router.push('/Login')}
             style={styles.loginButton}
-            textStyle={styles.loginButtonText}
-          />
-          
-          <CustomButton
-            title="Create Account"
+          >
+            <Text style={styles.loginButtonText}>Log In</Text>
+          </TouchableOpacity>
+            
+          <TouchableOpacity
             onPress={() => router.push('/SignUp')}
             style={styles.signupButton}
-            textStyle={styles.signupButtonText}
-          />
+          >
+            <Text style={styles.signupButtonText}>Create Account</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -169,7 +168,14 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
     borderRadius: 10,
     marginBottom: 12,
-    width: width > 600 ? '60%' : '80%',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
+    width: width > 600 ? '70%' : '100%',
+    height: 54,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -184,7 +190,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
     elevation: 4,
-    width: width > 600 ? '60%' : '80%',
+    width: width > 600 ? '70%' : '100%',
+    height: 54,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   signupButtonText: {
     color: '#FFFFFF',

@@ -1,7 +1,7 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import CustomButton from './components/CustomButton';
 import { LOCAL_HOST } from '../environment';
 
 export default function SignUpScreen() {
@@ -11,6 +11,9 @@ export default function SignUpScreen() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Track which input is focused
+  const [focusedInput, setFocusedInput] = useState(null);
 
   // Validation state variables
   // touchedFields: Tracks which fields the user has interacted with
@@ -43,10 +46,16 @@ export default function SignUpScreen() {
   const handleEmailChange = (text: string) => {
     setEmail(text);
     // Only update error state if field has already been touched
-    if (touchedFields.email) {
+    if (touchedFields.email && text) {
       setErrors({
         ...errors,
         email: !isValidEmail(text)
+      });
+    } else if (touchedFields.email && !text) {
+      // If the field is emptied, remove the error
+      setErrors({
+        ...errors,
+        email: false
       });
     }
   };
@@ -54,10 +63,16 @@ export default function SignUpScreen() {
   const handlePhoneChange = (text: string) => {
     setPhone(text);
     // Only update error state if field has already been touched
-    if (touchedFields.phone) {
+    if (touchedFields.phone && text) {
       setErrors({
         ...errors,
         phone: !isValidPhone(text)
+      });
+    } else if (touchedFields.phone && !text) {
+      // If the field is emptied, remove the error
+      setErrors({
+        ...errors,
+        phone: false
       });
     }
   };
@@ -68,6 +83,21 @@ export default function SignUpScreen() {
       ...touchedFields,
       [field]: true
     });
+    
+    // Only show errors after the field loses focus AND has content
+    if (field === 'email' && email) {
+      setErrors({
+        ...errors,
+        email: !isValidEmail(email)
+      });
+    } else if (field === 'phone' && phone) {
+      setErrors({
+        ...errors,
+        phone: !isValidPhone(phone)
+      });
+    }
+    
+    setFocusedInput(null);
   };
 
   // Checks if all form fields are valid
@@ -77,17 +107,27 @@ export default function SignUpScreen() {
 
   // Handles sign up process with validation
   const handleSignUp = async () => {
-
+    // Mark all fields as touched
     setTouchedFields({
       email: true,
       phone: true
     });
     
+    // Update error states for all fields
+    const emailError = !isValidEmail(email);
+    const phoneError = !isValidPhone(phone);
+    
+    setErrors({
+      email: emailError,
+      phone: phoneError
+    });
+    
     // Prevents submission if form has any validation errors
-    if (!isFormValid()) {
+    if (emailError || phoneError || !name || !lastName || !password) {
       alert('Please correct the errors before submitting');
       return;
     }
+    
     // Submit form data to backend
     try {
       const response = await fetch(`${LOCAL_HOST}/signup`, {
@@ -118,59 +158,203 @@ export default function SignUpScreen() {
   // Input fields
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content"></StatusBar>
+      <LinearGradient
+        colors={['#0A2463', '#3E92CC']}
+        style={styles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
       <View style={styles.container}>
         <Text style={styles.title}>Sign Up</Text>
-        <TextInput placeholder="Name" placeholderTextColor="#9E9E9E" style={styles.input} onChangeText={setName} />
-        <TextInput placeholder="Last Name" placeholderTextColor="#9E9E9E" style={styles.input} onChangeText={setLastName} />
-        <TextInput placeholder="Phone Number" placeholderTextColor="#9E9E9E" style={[styles.input, (touchedFields.phone && errors.phone) && styles.inputError]} keyboardType="phone-pad" onChangeText={handlePhoneChange} onBlur={() => handleBlur('phone')}/>
-          {(touchedFields.phone && errors.phone) && (<Text style={styles.errorText}>Please enter a valid phone number</Text>)}
-        <TextInput placeholder="Email" placeholderTextColor="#9E9E9E" style={[styles.input, (touchedFields.email && errors.email) && styles.inputError]} keyboardType="email-address" onChangeText={handleEmailChange} onBlur={() => handleBlur('email')}/>
-          {(touchedFields.email && errors.email) && (<Text style={styles.errorText}>Please enter a valid email address</Text>)}
-        <TextInput placeholder="Password" placeholderTextColor="#9E9E9E" style={styles.input} secureTextEntry onChangeText={setPassword} />
-        <CustomButton title="Sign Up" onPress={() => {
-          setTouchedFields({
-            email: true,
-            phone: true
-          });
-          handleSignUp();
-        }}/>
+        <View style={styles.formContainer}>
+          <TextInput 
+            placeholder="Name" 
+            placeholderTextColor="#E6F0FF" 
+            style={[
+              styles.input, 
+              focusedInput === 'name' && styles.inputFocused
+            ]}
+            onChangeText={setName}
+            onFocus={() => setFocusedInput('name')}
+            onBlur={() => setFocusedInput(null)} 
+          />
+
+          <TextInput 
+            placeholder="Last Name" 
+            placeholderTextColor="#E6F0FF" 
+            style={[
+              styles.input, 
+              focusedInput === 'lastName' && styles.inputFocused
+            ]} 
+            onChangeText={setLastName}
+            onFocus={() => setFocusedInput('lastName')}
+            onBlur={() => setFocusedInput(null)}
+          />
+
+          <TextInput 
+            placeholder="Phone Number" 
+            placeholderTextColor="#E6F0FF" 
+            style={[
+              styles.input, 
+              focusedInput === 'phone' && styles.inputFocused,
+              (touchedFields.phone && errors.phone) && styles.inputError
+            ]} 
+            keyboardType="phone-pad" 
+            onChangeText={handlePhoneChange} 
+            onFocus={() => setFocusedInput('phone')}
+            onBlur={() => {
+              handleBlur('phone');
+              setFocusedInput(null);
+            }}
+          />
+          {(touchedFields.phone && errors.phone) && (
+          <Text style={styles.errorText}>
+            Please enter a valid phone number
+          </Text>)}
+
+          <TextInput 
+            placeholder="Email" 
+            placeholderTextColor="#E6F0FF" 
+            style={[
+              styles.input, 
+              focusedInput === 'email' && styles.inputFocused,
+              (touchedFields.email && errors.email) && styles.inputError
+            ]} 
+            keyboardType="email-address" 
+            onChangeText={handleEmailChange}
+            onFocus={() => setFocusedInput('email')}
+            onBlur={() => {
+              handleBlur('email');
+              setFocusedInput(null);
+            }}
+          />
+          {(touchedFields.email && errors.email) && (
+            <Text style={styles.errorText}>Please enter a valid email address</Text>
+          )}
+
+          <TextInput 
+            placeholder="Password" 
+            placeholderTextColor="#E6F0FF" 
+            style={[
+              styles.input, 
+              focusedInput === 'password' && styles.inputFocused
+            ]} 
+            secureTextEntry 
+            onChangeText={setPassword}
+            onFocus={() => setFocusedInput('password')}
+            onBlur={() => setFocusedInput(null)}
+          />
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.signupButton}
+            onPress={handleSignUp}
+          >
+            <Text style={styles.signupButtonText}>Create Account</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.loginText}>
+            Already have an account?{' '}
+            <Text style={styles.loginLink} onPress={() => router.push('/Login')}>
+              Log In
+            </Text>
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#0A2463',
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   title: {
-    fontSize: 20,
+    fontSize: width > 600 ? 36 : 32,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#FFFFFF',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  formContainer: {
+    width: width > 600 ? '70%' : '100%',
+    marginBottom: 24,
   },
   input: {
     width: '100%',
-    height: 44,
+    height: 50,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     marginBottom: 12,
-    paddingHorizontal: 10,
-    borderRadius: 5,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  inputFocused: {
+    borderColor: '#FF6B6B',
+    borderWidth: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   inputError: {
-    borderColor: 'red',
+    borderColor: '#FF6B6B',
+    borderWidth: 2,
   },
   errorText: {
-    color: 'red',
-    fontSize: 12,
+    color: '#FF6B6B',
+    fontSize: 14,
     marginBottom: 12,
+    marginTop: -8,
     alignSelf: 'flex-start',
     paddingLeft: 5,
+  },
+  buttonContainer: {
+    width: width > 600 ? '70%' : '100%',
+    alignItems: 'center',
+  },
+  signupButton: {
+    backgroundColor: '#FF6B6B',
+    borderRadius: 10,
+    shadowColor: '#000000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
+    width: '100%',
+    height: 54,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signupButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loginText: {
+    color: '#E6F0FF',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  loginLink: {
+    color: '#FF6B6B',
+    fontWeight: 'bold',
   },
 });
