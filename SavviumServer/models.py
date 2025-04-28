@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -32,3 +33,4 @@ class Expense(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('budget_categories.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
     amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.Date, default=datetime.utcnow)

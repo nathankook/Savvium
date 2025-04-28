@@ -1,10 +1,20 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { LOCAL_HOST } from '../environment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignUpScreen() {
-  // State variables to store user info
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      if (isLoggedIn === 'true') {
+        router.replace('/Dashboard');
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');

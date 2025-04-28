@@ -103,7 +103,7 @@ export default function DashboardScreen() {
     try {
       await AsyncStorage.removeItem("isLoggedIn");
       await AsyncStorage.removeItem("userId");
-      router.replace("/Login");
+      router.replace("/");
     } catch (error) {
       console.error("Logout error:", error);
     }

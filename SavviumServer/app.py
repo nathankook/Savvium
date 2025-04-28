@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from models import db, BudgetCategory, Expense
 from auth import auth_bp
 from plaid_routes import plaid_bp
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
@@ -52,18 +53,22 @@ def get_categories(user_id):
 @app.route('/expenses', methods=['POST'])
 def create_expense():
     data = request.get_json()
+    expense_date = datetime.strptime(data.get('date'), '%Y-%m-%d').date() if data.get('date') else datetime.utcnow().date()
+
     new_expense = Expense(
         category_id=data["category_id"],
         name=data["name"],
-        amount=data["amount"]
+        amount=data["amount"],
+        date=expense_date
     )
     db.session.add(new_expense)
     db.session.commit()
-    return jsonify({"message": "Expense created successfully", "expense": {
+    return jsonify({"message": "Expense created", "expense": {
         "id": new_expense.id,
         "category_id": new_expense.category_id,
         "name": new_expense.name,
-        "amount": new_expense.amount
+        "amount": new_expense.amount,
+        "date": new_expense.date.isoformat()
     }})
 
 # Get all expenses for a specific user
