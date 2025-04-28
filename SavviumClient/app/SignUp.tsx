@@ -1,4 +1,4 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { LOCAL_HOST } from '../environment';

@@ -6,6 +6,7 @@ import {
   Animated,
   FlatList,
   Dimensions,
+  SafeAreaView
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { useState, useRef, useCallback } from "react";
@@ -162,6 +163,7 @@ export default function DashboardScreen() {
   const needsScroll = scrollableWidth > 0;
 
   return (
+    <SafeAreaView style={styles.safeArea}>
     <View style={styles.container}>
       {/* Top Nav */}
       <View style={styles.navBar}>
@@ -298,10 +300,14 @@ export default function DashboardScreen() {
         )}
       />
     </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: { flex: 1, backgroundColor: "#fff" },
   navBar: {
     height: 60,
