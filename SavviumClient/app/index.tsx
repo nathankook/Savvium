@@ -1,15 +1,18 @@
 import { View, Text, StyleSheet, Image, SafeAreaView, StatusBar, Dimensions, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
+  const [checkingLogin, setCheckingLogin] = useState(true);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       if (isLoggedIn === 'true') {
         router.replace('/Dashboard');
+      } else {
+        setCheckingLogin(false);
       }
     };
     checkLoginStatus();

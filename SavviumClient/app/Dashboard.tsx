@@ -64,7 +64,6 @@ export default function DashboardScreen() {
       console.error("Error fetching expenses:", error);
     }
   };
-  
 
   const initializeData = async () => {
     const storedUserId = await AsyncStorage.getItem('userId');
@@ -131,7 +130,7 @@ export default function DashboardScreen() {
   );
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  
+
   const isAnyCategoryOverBudget = categories.some((category) => {
     const categoryExpenses = expenses.filter((expense) => expense.category_id === category.id);
     const totalCategorySpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -168,7 +167,7 @@ export default function DashboardScreen() {
       {/* Top Nav */}
       <View style={styles.navBar}>
         <TouchableOpacity onPress={openSidebar} style={styles.menuButton}>
-          <Ionicons name="menu" size={28} color="black" />
+          <Ionicons name="menu" size={28} color="white" />
         </TouchableOpacity>
         <Text style={styles.userName}>{name}</Text>
       </View>
@@ -181,7 +180,7 @@ export default function DashboardScreen() {
           <Ionicons
             name="close"
             size={28}
-            color="black"
+            color="white"
             style={{ alignSelf: "flex-end" }}
           />
         </TouchableOpacity>
@@ -197,29 +196,36 @@ export default function DashboardScreen() {
 
       {/* Progress Ring Chart */}
       <View style={{ alignItems: "center", marginVertical: 20 }}>
-        <View style={{ width: 220, height: 220, justifyContent: "center", alignItems: "center" }}>
+        <View style={{
+          width: 220,
+          height: 220,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#111827",
+          borderRadius: 110,
+          padding: 10,
+        }}>
           <ProgressChart
             data={{
               labels: [],
               data: [progress],
             }}
-            width={220}
-            height={220}
+            width={200}
+            height={200}
             strokeWidth={16}
             radius={80}
             chartConfig={{
-              backgroundGradientFrom: "#fff",
-              backgroundGradientTo: "#fff",
+              backgroundGradientFrom: "#111827",
+              backgroundGradientTo: "#111827",
               color: (opacity = 1) =>
                 isAnyCategoryOverBudget
-                  ? `rgba(251, 146, 60, ${opacity})` // Orange
-                  : `rgba(16, 185, 129, ${opacity})`, // Green
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  ? `rgba(251, 146, 60, ${opacity})`
+                  : `rgba(16, 185, 129, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             }}
+            
             hideLegend={true}
           />
-
-          {/* Centered Text */}
           <View style={{
             position: "absolute",
             top: 0,
@@ -229,13 +235,12 @@ export default function DashboardScreen() {
             justifyContent: "center",
             alignItems: "center",
           }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: "white" }}>
               {`${displayedSpent} / ${displayedBudget}`}
             </Text>
           </View>
         </View>
 
-        {/* Over Budget Message */}
         {overBudgetCategory && (
           <Text style={{ fontSize: 16, color: 'orange', marginTop: 10 }}>
             Over budget by ${overBudgetAmount.toFixed(2)} in {overBudgetCategory.name}
@@ -263,7 +268,7 @@ export default function DashboardScreen() {
                 style={styles.addCategoryCard}
                 onPress={handleAddCategory}
               >
-                <Ionicons name="add" size={36} color="black" />
+                <Ionicons name="add" size={36} color="white" />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
@@ -305,33 +310,30 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: { flex: 1, backgroundColor: "#fff" },
+  safeArea: { flex: 1, backgroundColor: "#111827" },
+  container: { flex: 1, backgroundColor: "#111827" },
   navBar: {
     height: 60,
-    backgroundColor: "#fff",
+    backgroundColor: "#111827",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    elevation: 4,
   },
   menuButton: { padding: 8 },
-  userName: { fontSize: 18, fontWeight: "bold" },
+  userName: { fontSize: 18, fontWeight: "bold", color: "white" },
   sidebar: {
     position: "absolute",
     top: 0,
     left: 0,
     width: 250,
     height: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "#111827",
     paddingTop: 60,
     paddingHorizontal: 20,
     zIndex: 5,
   },
-  sidebarTitle: { fontSize: 20, fontWeight: "bold", marginVertical: 20 },
+  sidebarTitle: { fontSize: 20, fontWeight: "bold", marginVertical: 20, color: "white" },
   logoutButton: { marginTop: 20 },
   logoutText: { fontSize: 18, color: "red" },
   backdrop: {
@@ -349,12 +351,12 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 12,
-    backgroundColor: "transparent",
+    backgroundColor: "#1F2937",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
     borderWidth: 2,
-    borderColor: "black",
+    borderColor: "white",
     borderStyle: "dashed",
   },
   categoryCard: {
@@ -372,7 +374,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 20,
     marginLeft: 20,
-    color: "#111",
+    color: "#E6F0FF",
   },
   expenseList: { paddingHorizontal: 20, paddingTop: 10 },
   expenseItem: {
@@ -380,10 +382,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 10,
-    borderBottomColor: "#ddd",
+    borderBottomColor: "#374151",
     borderBottomWidth: 1,
   },
-  expenseName: { fontSize: 16, fontWeight: "bold", color: "#111" },
-  expenseCategory: { fontSize: 12, color: "#666" },
+  expenseName: { fontSize: 16, fontWeight: "bold", color: "#E6F0FF" },
+  expenseCategory: { fontSize: 12, color: "#9CA3AF" },
   expenseAmount: { fontSize: 16, fontWeight: "bold", color: "#10B981" },
 });
