@@ -17,7 +17,7 @@ import { ProgressChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-type Category = {
+export type Category = {
   id: number;
   user_id?: number;
   name?: string;
@@ -25,7 +25,7 @@ type Category = {
   color?: string;
 };
 
-type Expense = {
+export type Expense = {
   id: number;
   category_id: number;
   name: string;
@@ -127,6 +127,18 @@ export default function DashboardScreen() {
     });
   };
 
+  const handleAddExpense = () => {
+      router.push("/AddExpense");
+  };
+  
+  const handleAddRecurringExpense = () => {
+      router.push("/AddRecurringExpense");
+      };
+  
+  const handleMonthlyExpensesGraph = () => {
+      router.push("/MonthlyExpensesGraph");
+  };
+
   const totalBudget = categories.reduce(
     (sum, cat) => sum + (cat.budget ?? 0),
     0
@@ -167,15 +179,15 @@ export default function DashboardScreen() {
       (overBudgetCategory.budget ?? 0)
     : 0;
 
-  const progress = totalBudget > 0 ? Math.min(totalSpent / totalBudget, 1) : 0;
+const progress = totalBudget > 0 ? Math.min(totalSpent / totalBudget, 1) : 0;
 
-  const displayedSpent = Number.isFinite(totalSpent)
-    ? totalSpent.toFixed(2)
-    : "0.00";
-  const displayedBudget =
-    Number.isFinite(totalBudget) && totalBudget !== 0
-      ? totalBudget.toFixed(2)
-      : "0.00";
+const displayedSpent = Number.isFinite(totalSpent)
+  ? totalSpent.toFixed(2)
+  : "0.00";
+const displayedBudget =
+  Number.isFinite(totalBudget) && totalBudget !== 0
+    ? totalBudget.toFixed(2)
+    : "0.00"
 
   const scrollableWidth = Math.max(
     0,
@@ -196,35 +208,40 @@ export default function DashboardScreen() {
         </View>
 
         {/* Sidebar */}
-        <Animated.View
-          style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}
-        >
-          <TouchableOpacity onPress={closeSidebar}>
-            <Ionicons
-              name="close"
-              size={28}
-              color="white"
-              style={{ alignSelf: "flex-end" }}
-            />
-          </TouchableOpacity>
-          <Text style={styles.sidebarTitle}>Menu</Text>
+              <Animated.View
+                  style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}
+              >
+                  <TouchableOpacity onPress={closeSidebar}>
+                      <Ionicons
+                          name="close"
+                          size={28}
+                          color="white"
+                          style={{ alignSelf: "flex-end" }}
+                      />
+                  </TouchableOpacity>
+                  <Text style={styles.sidebarTitle}>Menu</Text>
 
-          <View style={styles.userInfo}>
-            <Ionicons name="person-circle" size={40} color="white" />
-            <Text style={styles.userNameSidebar}>{name || "User"}</Text>
-          </View>
+                  <View style={styles.userInfo}>
+                      <Ionicons name="person-circle" size={40} color="white" />
+                      <Text style={styles.userNameSidebar}>{name || "User"}</Text>
+                  </View>
 
-          <View style={{ flex: 1 }} />
+                  <TouchableOpacity
+                      onPress={handleMonthlyExpensesGraph}
+                      style={styles.sidebarButton}
+                  >
+                      <Text style={styles.sidebarButtonText}>Monthly Expenses Graph</Text>
+                  </TouchableOpacity>
 
-          <View style={styles.logoutContainer}>
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={styles.logoutButton}
-            >
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+                  <View style={{ flex: 1 }} />
+
+                  <View style={styles.logoutContainer}>
+                      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                          <Text style={styles.logoutText}>Logout</Text>
+                      </TouchableOpacity>
+                  </View>
+              </Animated.View>
+
 
         {isSidebarOpen && (
           <TouchableOpacity style={styles.backdrop} onPress={closeSidebar} />
@@ -339,6 +356,23 @@ export default function DashboardScreen() {
 
         {/* Expenses List */}
         <Text style={styles.expensesTitle}>Recent Expenses</Text>
+        <View style={styles.addExpenseContainer}>
+            <TouchableOpacity
+                style={styles.addExpenseButton}
+                onPress={() => router.push("/AddExpense")}
+            >
+                <Ionicons name="add" size={36} color="white" />
+                <Text style={styles.addExpenseText}>Add Expense</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.addRecurringExpenseButton}
+                onPress={() => router.push("/AddRecurringExpense")}
+            >
+                <Ionicons name="repeat" size={36} color="white" />
+                <Text style={styles.addExpenseText}>Add Recurring Expense</Text>
+            </TouchableOpacity>
+        </View>
+
         <FlatList
           data={expenses}
           keyExtractor={(item) => item.id.toString()}
@@ -389,7 +423,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 20,
     color: "white",
-  },
+    },
+  sidebarButton: {
+  marginTop: 20,
+  padding: 10,
+  backgroundColor: "#1F2937",
+  borderRadius: 8,
+  alignItems: "center",
+},
+sidebarButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+
   logoutButton: { marginTop: 20 },
   logoutText: { fontSize: 18, color: "red" },
   backdrop: {
@@ -444,6 +487,39 @@ const styles = StyleSheet.create({
   expenseName: { fontSize: 16, fontWeight: "bold", color: "#E6F0FF" },
   expenseCategory: { fontSize: 12, color: "#9CA3AF" },
   expenseAmount: { fontSize: 16, fontWeight: "bold", color: "#10B981" },
+  addExpenseContainer: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      marginVertical: 20,
+  },
+  addExpenseButton: {
+      width: 140,
+      height: 90,
+      borderRadius: 12,
+      backgroundColor: "#1F2937",
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 2,
+      borderColor: "white",
+      borderStyle: "solid",
+  },
+  addRecurringExpenseButton: {
+      width: 140,
+      height: 90,
+      borderRadius: 12,
+      backgroundColor: "#1F2937",
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 2,
+      borderColor: "white",
+      borderStyle: "solid",
+  },
+  addExpenseText: {
+      color: "white",
+      fontSize: 14,
+      fontWeight: "bold",
+      marginTop: 8,
+  },
   userInfo: {
     marginTop: 20,
     flexDirection: "row",

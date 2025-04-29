@@ -1,2 +1,6 @@
 /SavviumServer/__pycache__
 *.pyc
+/SavviumClient/package-lock.json
+/.vs
+/SavviumClient/.vs
+/SavviumServer/.vs

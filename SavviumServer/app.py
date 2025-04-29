@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from models import db, BudgetCategory, Expense
 from auth import auth_bp
-from plaid_routes import plaid_bp
 from datetime import datetime
 
 app = Flask(__name__)
@@ -10,7 +9,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db.init_app(app)
 
 app.register_blueprint(auth_bp)
-app.register_blueprint(plaid_bp)
 
 @app.route('/')
 def hello_world():
@@ -36,10 +34,10 @@ def create_category():
         "color": new_cat.color
     }})
 
-# Get all categories for a user
-@app.route('/categories/<int:user_id>', methods=['GET'])
-def get_categories(user_id):
-    categories = BudgetCategory.query.filter_by(user_id=user_id).all()
+# Get all categories
+@app.route('/categories', methods=['GET'])
+def get_all_categories():
+    categories = BudgetCategory.query.all()
     result = [{
         "id": c.id,
         "user_id": c.user_id,
@@ -48,6 +46,7 @@ def get_categories(user_id):
         "color": c.color
     } for c in categories]
     return jsonify(result)
+
 
 # Create a new expense
 @app.route('/expenses', methods=['POST'])
@@ -70,6 +69,38 @@ def create_expense():
         "amount": new_expense.amount,
         "date": new_expense.date.isoformat()
     }})
+
+# Get all expenses for the current month
+@app.route('/expenses/monthly', methods=['GET'])
+def get_monthly_expenses():
+    try:
+        # Calculate the start of the current month
+        today = datetime.utcnow()
+        start_of_month = today.replace(day=1)
+
+        # Query expenses for the current month
+        expenses = (
+            db.session.query(Expense, BudgetCategory.name.label("category_name"))
+            .join(BudgetCategory, Expense.category_id == BudgetCategory.id)
+            .filter(Expense.date >= start_of_month)
+            .all()
+        )
+
+        # Format the data for the frontend
+        result = [
+            {
+                "id": expense.Expense.id,
+                "name": expense.Expense.name,
+                "amount": expense.Expense.amount,
+                "date": expense.Expense.date.strftime("%Y-%m-%d"),
+                "category_name": expense.category_name,
+            }
+            for expense in expenses
+        ]
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Get all expenses for a specific user
 @app.route('/users/<int:user_id>/expenses', methods=['GET'])
