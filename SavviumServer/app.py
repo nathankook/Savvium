@@ -153,6 +153,20 @@ def update_category(id):
     db.session.commit()
     return jsonify({'message': 'Category updated successfully'})
 
+# Get categories for a specific user
+@app.route('/users/<int:user_id>/categories', methods=['GET'])
+def get_user_categories(user_id):
+    categories = BudgetCategory.query.filter_by(user_id=user_id).all()
+    result = [{
+        "id": c.id,
+        "user_id": c.user_id,
+        "name": c.name,
+        "budget": c.budget,
+        "color": c.color
+    } for c in categories]
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     with app.app_context():
         print("Creating database and tables...")

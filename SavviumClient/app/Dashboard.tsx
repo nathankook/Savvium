@@ -48,13 +48,17 @@ export default function DashboardScreen() {
 
   const fetchCategories = async (id: string) => {
     try {
-      const response = await fetch(`${LOCAL_HOST}/categories/${id}`);
+      const response = await fetch(`${LOCAL_HOST}/users/${id}/categories`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
+  
 
   const fetchExpenses = async (userId: string) => {
     try {
