@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,59 +49,65 @@ export default function AddCategoryScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Top Nav */}
-      <View style={styles.navBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
-          <Ionicons name="arrow-back" size={28} color="white" />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Top Nav */}
+        <View style={styles.navBar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
+            <Ionicons name="arrow-back" size={28} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Add Category</Text>
+        </View>
+
+        {/* Category Name Input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Category Name"
+          placeholderTextColor="#9E9E9E"
+          onChangeText={setName}
+          value={name}
+        />
+
+        {/* Budget Input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Monthly Budget"
+          placeholderTextColor="#9E9E9E"
+          keyboardType="numeric"
+          onChangeText={setBudget}
+          value={budget}
+        />
+
+        {/* Color Picker */}
+        <Text style={styles.label}>Choose a Color</Text>
+        <View style={styles.colorPicker}>
+          {presetColors.map((color) => (
+            <TouchableOpacity
+              key={color}
+              style={[
+                styles.colorCircle,
+                { backgroundColor: color },
+                selectedColor === color && styles.selectedCircle
+              ]}
+              onPress={() => setSelectedColor(color)}
+            />
+          ))}
+        </View>
+
+        {/* Save Button */}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveText}>Save</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Add Category</Text>
       </View>
-
-      {/* Category Name Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Category Name"
-        placeholderTextColor="#9E9E9E"
-        onChangeText={setName}
-        value={name}
-      />
-
-      {/* Budget Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Monthly Budget"
-        placeholderTextColor="#9E9E9E"
-        keyboardType="numeric"
-        onChangeText={setBudget}
-        value={budget}
-      />
-
-      {/* Color Picker */}
-      <Text style={styles.label}>Choose a Color</Text>
-      <View style={styles.colorPicker}>
-        {presetColors.map((color) => (
-          <TouchableOpacity
-            key={color}
-            style={[
-              styles.colorCircle,
-              { backgroundColor: color },
-              selectedColor === color && styles.selectedCircle
-            ]}
-            onPress={() => setSelectedColor(color)}
-          />
-        ))}
-      </View>
-
-      {/* Save Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>Save</Text>
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#111827",
+  },
   container: {
     flex: 1,
     backgroundColor: '#111827',

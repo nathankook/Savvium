@@ -14,7 +14,12 @@ export default function LoginScreen() {
     const checkLoginStatus = async () => {
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       if (isLoggedIn === 'true') {
-        router.replace('/Dashboard');
+        const userName = await AsyncStorage.getItem('userName');
+
+        router.replace({
+          pathname: '/Dashboard',
+          params: { name: userName }
+        });
       } else {
         setCheckingLogin(false);
       }
@@ -44,9 +49,10 @@ export default function LoginScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        // Save login state and userId into AsyncStorage
+        // Save login state, userId, and userName into AsyncStorage
         await AsyncStorage.setItem('isLoggedIn', 'true');
         await AsyncStorage.setItem('userId', data.user.id.toString());
+        await AsyncStorage.setItem('userName', data.user.name);
 
         // Redirect to Dashboard, passing name (optional)
         router.replace({
