@@ -7,6 +7,7 @@ import {
   FlatList,
   Alert,
   Dimensions,
+  SafeAreaView
 } from "react-native";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams, router } from "expo-router";
@@ -133,156 +134,162 @@ export default function CategoryDetailsScreen() {
   const isOverBudget = totalSpent > currentBudget;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.navBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
-          <Ionicons name="arrow-back" size={28} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setDropdownVisible(!dropdownVisible)} style={styles.nameDropdown}>
-          <Ionicons name="chevron-down-outline" size={20} color="white" />
-          <Text style={styles.categoryName}>{name}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {dropdownVisible && (
-        <View style={styles.dropdownMenu}>
-          <TouchableOpacity onPress={() => { setDropdownVisible(false); setEditBudgetVisible(true); }}>
-            <Text style={styles.dropdownItem}>Edit Budget</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.navBar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
+            <Ionicons name="arrow-back" size={28} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { setDropdownVisible(false); setConfirmDeleteVisible(true); }}>
-            <Text style={styles.dropdownItem}>Delete Category</Text>
+          <TouchableOpacity onPress={() => setDropdownVisible(!dropdownVisible)} style={styles.nameDropdown}>
+            <Ionicons name="chevron-down-outline" size={20} color="white" />
+            <Text style={styles.categoryName}>{name}</Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      {calendarVisible && (
-        <Calendar
-          onDayPress={onDayPress}
-          markedDates={{ [selectedDate ?? ""]: { selected: true, selectedColor: "#4F46E5" } }}
-        />
-      )}
-
-      {selectedDate && (
-        <>
-          <Text style={{ color: "#fff", textAlign: "center", marginTop: 10 }}>Selected Date: {selectedDate}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Expense Name"
-            placeholderTextColor="#9E9E9E"
-            value={expenseName}
-            onChangeText={setExpenseName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Amount"
-            placeholderTextColor="#9E9E9E"
-            keyboardType="numeric"
-            value={expenseAmount}
-            onChangeText={setExpenseAmount}
-          />
-          <TouchableOpacity style={styles.saveButton} onPress={addExpense}>
-            <Text style={styles.saveText}>Save Expense</Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-{!calendarVisible && !selectedDate && (
-  <TouchableOpacity style={styles.addExpenseButton} onPress={openCalendar}>
-    <Text style={styles.addExpenseText}>Add Expense</Text>
-  </TouchableOpacity>
-)}
-
-
-      <View style={{ alignItems: "center", marginVertical: 20 }}>
-        <View style={{ width: 220, height: 220, justifyContent: "center", alignItems: "center" }}>
-          <ProgressChart
-            data={{ labels: [], data: [progress] }}
-            width={220}
-            height={220}
-            strokeWidth={16}
-            radius={80}
-            chartConfig={{
-              backgroundGradientFrom: "#111827",
-              backgroundGradientTo: "#111827",
-              color: (opacity = 1) => isOverBudget ? `rgba(239,68,68,${opacity})` : `rgba(16,185,129,${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-            }}
-            hideLegend
-          />
-          <View style={{ position: "absolute", justifyContent: "center", alignItems: "center", top: 0, bottom: 0, left: 0, right: 0 }}>
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>${totalSpent.toFixed(2)}</Text>
-            <Text style={{ fontSize: 16, color: "white" }}>of</Text>
-            <Text style={{ fontSize: 18, color: "white" }}>${currentBudget.toFixed(2)}</Text>
-          </View>
-        </View>
-        {isOverBudget && (
-          <Text style={{ fontSize: 16, color: "red", marginTop: 10 }}>
-            You are ${Math.abs(totalSpent - currentBudget).toFixed(2)} over budget.
-          </Text>
-        )}
-      </View>
-
-      <FlatList
-        data={expenses}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingVertical: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.expenseItem}>
-            <Text style={styles.expenseName}>{item.name}</Text>
-            <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+        {dropdownVisible && (
+          <View style={styles.dropdownMenu}>
+            <TouchableOpacity onPress={() => { setDropdownVisible(false); setEditBudgetVisible(true); }}>
+              <Text style={styles.dropdownItem}>Edit Budget</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { setDropdownVisible(false); setConfirmDeleteVisible(true); }}>
+              <Text style={styles.dropdownItem}>Delete Category</Text>
+            </TouchableOpacity>
           </View>
         )}
-      />
 
-      {(confirmDeleteVisible || editBudgetVisible) && (
-        <View style={StyleSheet.absoluteFillObject}>
-          <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill}>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modal}>
-                {confirmDeleteVisible && (
-                  <>
-                    <Text style={styles.modalText}>Are you sure you want to delete this category?</Text>
-                    <View style={styles.modalButtons}>
-                      <TouchableOpacity style={styles.modalButton} onPress={handleDeleteCategory}>
-                        <Text style={styles.modalButtonText}>Yes, Delete</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.modalButtonCancel} onPress={() => setConfirmDeleteVisible(false)}>
-                        <Text style={styles.modalButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-                {editBudgetVisible && (
-                  <>
-                    <Text style={styles.modalText}>Enter a new budget:</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="New Budget"
-                      placeholderTextColor="#9E9E9E"
-                      keyboardType="numeric"
-                      value={newBudget}
-                      onChangeText={setNewBudget}
-                    />
-                    <View style={styles.modalButtons}>
-                      <TouchableOpacity style={styles.modalButton} onPress={handleEditBudget}>
-                        <Text style={styles.modalButtonText}>Save</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.modalButtonCancel} onPress={() => setEditBudgetVisible(false)}>
-                        <Text style={styles.modalButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-              </View>
+        {calendarVisible && (
+          <Calendar
+            onDayPress={onDayPress}
+            markedDates={{ [selectedDate ?? ""]: { selected: true, selectedColor: "#4F46E5" } }}
+          />
+        )}
+
+        {selectedDate && (
+          <>
+            <Text style={{ color: "#fff", textAlign: "center", marginTop: 10 }}>Selected Date: {selectedDate}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Expense Name"
+              placeholderTextColor="#9E9E9E"
+              value={expenseName}
+              onChangeText={setExpenseName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Amount"
+              placeholderTextColor="#9E9E9E"
+              keyboardType="numeric"
+              value={expenseAmount}
+              onChangeText={setExpenseAmount}
+            />
+            <TouchableOpacity style={styles.saveButton} onPress={addExpense}>
+              <Text style={styles.saveText}>Save Expense</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+  {!calendarVisible && !selectedDate && (
+    <TouchableOpacity style={styles.addExpenseButton} onPress={openCalendar}>
+      <Text style={styles.addExpenseText}>Add Expense</Text>
+    </TouchableOpacity>
+  )}
+
+
+        <View style={{ alignItems: "center", marginVertical: 20 }}>
+          <View style={{ width: 220, height: 220, justifyContent: "center", alignItems: "center" }}>
+            <ProgressChart
+              data={{ labels: [], data: [progress] }}
+              width={220}
+              height={220}
+              strokeWidth={16}
+              radius={80}
+              chartConfig={{
+                backgroundGradientFrom: "#111827",
+                backgroundGradientTo: "#111827",
+                color: (opacity = 1) => isOverBudget ? `rgba(239,68,68,${opacity})` : `rgba(16,185,129,${opacity})`,
+                labelColor: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+              }}
+              hideLegend
+            />
+            <View style={{ position: "absolute", justifyContent: "center", alignItems: "center", top: 0, bottom: 0, left: 0, right: 0 }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>${totalSpent.toFixed(2)}</Text>
+              <Text style={{ fontSize: 16, color: "white" }}>of</Text>
+              <Text style={{ fontSize: 18, color: "white" }}>${currentBudget.toFixed(2)}</Text>
             </View>
-          </BlurView>
+          </View>
+          {isOverBudget && (
+            <Text style={{ fontSize: 16, color: "red", marginTop: 10 }}>
+              You are ${Math.abs(totalSpent - currentBudget).toFixed(2)} over budget.
+            </Text>
+          )}
         </View>
-      )}
-    </View>
+
+        <FlatList
+          data={expenses}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingVertical: 20 }}
+          renderItem={({ item }) => (
+            <View style={styles.expenseItem}>
+              <Text style={styles.expenseName}>{item.name}</Text>
+              <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+            </View>
+          )}
+        />
+
+        {(confirmDeleteVisible || editBudgetVisible) && (
+          <View style={StyleSheet.absoluteFillObject}>
+            <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill}>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modal}>
+                  {confirmDeleteVisible && (
+                    <>
+                      <Text style={styles.modalText}>Are you sure you want to delete this category?</Text>
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity style={styles.modalButton} onPress={handleDeleteCategory}>
+                          <Text style={styles.modalButtonText}>Yes, Delete</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalButtonCancel} onPress={() => setConfirmDeleteVisible(false)}>
+                          <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+                  {editBudgetVisible && (
+                    <>
+                      <Text style={styles.modalText}>Enter a new budget:</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="New Budget"
+                        placeholderTextColor="#9E9E9E"
+                        keyboardType="numeric"
+                        value={newBudget}
+                        onChangeText={setNewBudget}
+                      />
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity style={styles.modalButton} onPress={handleEditBudget}>
+                          <Text style={styles.modalButtonText}>Save</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalButtonCancel} onPress={() => setEditBudgetVisible(false)}>
+                          <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+                </View>
+              </View>
+            </BlurView>
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#111827",
+  },
   container: {
     flex: 1,
     backgroundColor: "#111827",

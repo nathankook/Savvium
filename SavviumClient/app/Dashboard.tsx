@@ -44,6 +44,7 @@ export default function DashboardScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   const fetchCategories = async (id: string) => {
     try {
@@ -70,8 +71,12 @@ export default function DashboardScreen() {
 
   const initializeData = async () => {
     const storedUserId = await AsyncStorage.getItem("userId");
+    const storedUserName = await AsyncStorage.getItem('userName');
     if (storedUserId) {
       setUserId(storedUserId);
+      if (storedUserName) {
+        setUserName(storedUserName);
+      }
       await fetchCategories(storedUserId);
       await fetchExpenses(storedUserId);
     }
@@ -192,7 +197,7 @@ export default function DashboardScreen() {
           <TouchableOpacity onPress={openSidebar} style={styles.menuButton}>
             <Ionicons name="menu" size={28} color="white" />
           </TouchableOpacity>
-          <Text style={styles.userName}>{name}</Text>
+          <Text style={styles.userName}>{name || userName || "User"}</Text>
         </View>
 
         {/* Sidebar */}
@@ -211,7 +216,7 @@ export default function DashboardScreen() {
 
           <View style={styles.userInfo}>
             <Ionicons name="person-circle" size={40} color="white" />
-            <Text style={styles.userNameSidebar}>{name || "User"}</Text>
+            <Text style={styles.userNameSidebar}>{name || userName || "User"}</Text>
           </View>
 
           <View style={{ flex: 1 }} />
