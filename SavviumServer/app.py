@@ -34,20 +34,6 @@ def create_category():
         "color": new_cat.color
     }})
 
-# Get all categories
-@app.route('/categories', methods=['GET'])
-def get_all_categories():
-    categories = BudgetCategory.query.all()
-    result = [{
-        "id": c.id,
-        "user_id": c.user_id,
-        "name": c.name,
-        "budget": c.budget,
-        "color": c.color
-    } for c in categories]
-    return jsonify(result)
-
-
 # Create a new expense
 @app.route('/expenses', methods=['POST'])
 def create_expense():

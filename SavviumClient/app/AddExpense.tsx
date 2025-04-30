@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOCAL_HOST } from "../environment";
 import type { Category } from "./Dashboard";
 import { Picker } from "@react-native-picker/picker";
@@ -10,29 +11,35 @@ export default function AddExpenseScreen() {
     const [amount, setAmount] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [userId, setUserId] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch(`${LOCAL_HOST}/categories`);
-                if (!response.ok) {
-                    console.error(`HTTP error! status: ${response.status}`);
-                    return;
-                }
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    const data = await response.json();
-                    setCategories(data);
-                } else {
-                    console.error("Response is not JSON");
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
+    const fetchCategories = async (id: string) => {
+        try {
+            const response = await fetch(`${LOCAL_HOST}/users/${id}/categories`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        };
+            const data = await response.json();
+            setCategories(data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
 
-        fetchCategories();
-    }, []);
+    const initializeData = async () => {
+        const storedUserId = await AsyncStorage.getItem("userId");
+        if (storedUserId) {
+            setUserId(storedUserId);
+            await fetchCategories(storedUserId);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            initializeData();
+        }, [])
+    );
+
 
     const handleAddExpense = async () => {
         if (!selectedCategory) {

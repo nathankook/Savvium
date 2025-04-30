@@ -230,14 +230,9 @@ const displayedBudget =
                   </TouchableOpacity>
                   <Text style={styles.sidebarTitle}>Menu</Text>
 
-                  {/*<View style={styles.userInfo}>*/}
-                  {/*    <Ionicons name="person-circle" size={40} color="white" />*/}
-                  {/*    <Text style={styles.userNameSidebar}>{name || userName || "User"}</Text>*/}
-                  {/*</View>*/}
-
                   <View style={styles.userInfo}>
-                      <Ionicons name="person-circle" size={40} color="white" />
-                      <Text style={styles.userNameSidebar}>{name || "User"}</Text>
+                    <Ionicons name="person-circle" size={40} color="white" />
+                    <Text style={styles.userNameSidebar}>{name || userName || "User"}</Text>
                   </View>
 
                   <TouchableOpacity

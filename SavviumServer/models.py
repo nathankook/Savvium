@@ -14,6 +14,7 @@ class User(db.Model):
     password = db.Column(db.String(150), nullable=False)
 
     categories = db.relationship('BudgetCategory', backref='user', lazy=True, cascade='all, delete-orphan')
+    
 
 class BudgetCategory(db.Model):
     __tablename__ = 'budget_categories'
@@ -31,6 +32,16 @@ class Expense(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('budget_categories.id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.Date, default=datetime.utcnow)
+
+
+class Income(db.Model):
+    __tablename__ = 'incomes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
