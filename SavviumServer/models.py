@@ -34,7 +34,7 @@ class Expense(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('budget_categories.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    date = db.Column(db.Date, default=datetime.utcnow)
+    date = db.Column(db.Date, nullable=False)
 
 
 class Income(db.Model):
@@ -45,3 +45,16 @@ class Income(db.Model):
     name = db.Column(db.String, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
+
+class RecurringExpense(db.Model):
+    __tablename__ = 'recurring_expenses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('budget_categories.id'), nullable=False)
+    due_day = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship('User', backref='recurring_expenses')
+    category = db.relationship('BudgetCategory', backref='recurring_expenses')

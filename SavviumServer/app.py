@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from models import db, BudgetCategory, Expense
+from models import db, BudgetCategory, Expense, Income, RecurringExpense
 from auth import auth_bp
 from datetime import datetime
 
@@ -55,6 +55,31 @@ def create_expense():
         "amount": new_expense.amount,
         "date": new_expense.date.isoformat()
     }})
+
+@app.route('/expenses/<int:expense_id>', methods=['PATCH'])
+def update_expense(expense_id):
+    data = request.get_json()
+    expense = Expense.query.get_or_404(expense_id)
+
+    if "name" in data:
+        expense.name = data["name"]
+    if "amount" in data:
+        expense.amount = data["amount"]
+    if "date" in data:
+        # Convert from string to date
+        expense.date = datetime.strptime(data["date"], "%Y-%m-%d").date()
+
+    db.session.commit()
+    return jsonify({"message": "Expense updated"})
+
+@app.route('/expenses/<int:expense_id>', methods=['DELETE'])
+def delete_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({'message': 'Expense deleted successfully'})
+
+
 
 # Get all expenses for the current month
 @app.route('/expenses/monthly', methods=['GET'])
@@ -152,6 +177,96 @@ def get_user_categories(user_id):
     } for c in categories]
     return jsonify(result)
 
+@app.route('/incomes', methods=['POST'])
+def add_income():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    name = data.get('name')  # 'name' instead of 'source'
+    amount = data.get('amount')
+    date_str = data.get('date')  # optional
+
+    if not user_id or not name or not amount:
+        return jsonify({'message': 'Missing required fields'}), 400
+
+    try:
+        income_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.utcnow().date()
+
+        income = Income(
+            user_id=user_id,
+            name=name,
+            amount=amount,
+            date=income_date
+        )
+        db.session.add(income)
+        db.session.commit()
+        return jsonify({'message': 'Income added successfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Error saving income', 'error': str(e)}), 500
+
+@app.route('/recurring-expenses', methods=['POST'])
+def add_recurring_expense():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    name = data.get('name')
+    amount = data.get('amount')
+    category_id = data.get('category_id')
+    due_day = data.get('due_day')  # 1–31
+
+    if not all([user_id, name, amount, category_id, due_day]):
+        return jsonify({'message': 'Missing required fields'}), 400
+
+
+    try:
+        new_expense = RecurringExpense(
+            user_id=user_id,
+            name=name,
+            amount=amount,
+            category_id=category_id,
+            due_day=due_day
+        )
+        db.session.add(new_expense)
+        db.session.commit()
+        return jsonify({'message': 'Recurring expense added'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Error saving expense', 'error': str(e)}), 500
+
+@app.route('/recurring-expenses', methods=['GET'])
+def get_recurring_expenses():
+    try:
+        expenses = RecurringExpense.query.all()
+        result = [{
+            'id': e.id,
+            'name': e.name,
+            'amount': e.amount,
+            'due_day': e.due_day,
+            'category_id': e.category_id,
+            'user_id': e.user_id
+        } for e in expenses]
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'message': 'Error fetching expenses', 'error': str(e)}), 500
+
+@app.route('/recurring-expenses/<int:expense_id>', methods=['PATCH'])
+def update_recurring_expense(expense_id):
+    data = request.get_json()
+    expense = RecurringExpense.query.get_or_404(expense_id)
+
+    if 'due_day' in data:
+        expense.due_day = data['due_day']
+    if 'amount' in data:
+        expense.amount = data['amount']
+
+    db.session.commit()
+    return jsonify({'message': 'Recurring expense updated'})
+
+@app.route('/recurring-expenses/<int:expense_id>', methods=['DELETE'])
+def delete_recurring_expense(expense_id):
+    expense = RecurringExpense.query.get_or_404(expense_id)
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({'message': 'Recurring expense deleted'})
 
 if __name__ == '__main__':
     with app.app_context():
