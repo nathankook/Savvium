@@ -7,6 +7,7 @@ import {
   FlatList,
   Dimensions,
   SafeAreaView,
+  ScrollView
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { useState, useRef, useCallback } from "react";
@@ -33,6 +34,14 @@ export type Expense = {
   category_name: string;
 };
 
+export type Income = {
+  id: number;
+  user_id: number;
+  name: string;
+  amount: number;
+  date: string;
+};
+
 export default function DashboardScreen() {
   const { name, refresh } = useLocalSearchParams<{
     name?: string;
@@ -43,6 +52,7 @@ export default function DashboardScreen() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
 
@@ -72,6 +82,19 @@ export default function DashboardScreen() {
     }
   };
 
+  const fetchIncomes = async (userId: string) => {
+    try {
+      const response = await fetch(`${LOCAL_HOST}/users/${userId}/incomes`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setIncomes(data);
+    } catch (error) {
+      console.error("Error fetching incomes:", error);
+    }
+  };
+
   const initializeData = async () => {
     const storedUserId = await AsyncStorage.getItem("userId");
     const storedUserName = await AsyncStorage.getItem("userName");
@@ -82,6 +105,7 @@ export default function DashboardScreen() {
       }
       await fetchCategories(storedUserId);
       await fetchExpenses(storedUserId);
+      await fetchIncomes(storedUserId); 
     }
   };
 
@@ -158,6 +182,8 @@ export default function DashboardScreen() {
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
+    const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+
   const isAnyCategoryOverBudget = categories.some((category) => {
     const categoryExpenses = expenses.filter(
       (expense) => expense.category_id === category.id
@@ -200,6 +226,11 @@ export default function DashboardScreen() {
     Number.isFinite(totalBudget) && totalBudget !== 0
       ? totalBudget.toFixed(2)
       : "0.00";
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
 
   const scrollableWidth = Math.max(
     0,
@@ -247,13 +278,6 @@ export default function DashboardScreen() {
             <Text style={styles.sidebarButtonText}>Monthly Expenses Graph</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleAddIncome}
-            style={styles.sidebarButton}
-          >
-            <Text style={styles.sidebarButtonText}>Add Income</Text>
-          </TouchableOpacity>
-
           <View style={{ flex: 1 }} />
 
           <View style={styles.logoutContainer}>
@@ -270,19 +294,30 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.backdrop} onPress={closeSidebar} />
         )}
 
+        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+        {/* Summary Section */}
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryCard}>
+            <Ionicons name="wallet-outline" size={24} color="#10B981" />
+            <Text style={styles.summaryLabel}>Total Income</Text>
+            <Text style={[styles.summaryAmount, { color: '#10B981' }]}>
+              ${totalIncome.toFixed(2)}
+            </Text>
+          </View>
+          <View style={styles.summaryCard}>
+            <Ionicons name="card-outline" size={24} color="#EF4444" />
+            <Text style={styles.summaryLabel}>Total Expenses</Text>
+            <Text style={[styles.summaryAmount, { color: '#EF4444' }]}>
+              ${totalSpent.toFixed(2)}
+            </Text>
+          </View>
+        </View>
+
         {/* Progress Ring Chart */}
-        <View style={{ alignItems: "center", marginVertical: 20 }}>
-          <View
-            style={{
-              width: 220,
-              height: 220,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "#111827",
-              borderRadius: 110,
-              padding: 10,
-            }}
-          >
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Budget Progress</Text>
+          
+          <View style={styles.chartRing}>
             <ProgressChart
               data={{
                 labels: [],
@@ -303,25 +338,13 @@ export default function DashboardScreen() {
               }}
               hideLegend={true}
             />
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <View style={{ alignItems: "center" }}>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "bold", color: "white" }}
-                >
+            <View style={styles.chartTextContainer}>
+              <View style={styles.chartAmountContainer}>
+                <Text style={styles.chartAmountSpent}>
                   ${displayedSpent}
                 </Text>
-                <Text style={{ fontSize: 16, color: "white" }}>of</Text>
-                <Text style={{ fontSize: 18, color: "white" }}>
+                <Text style={styles.chartAmountOf}>of</Text>
+                <Text style={styles.chartAmountBudget}>
                   ${displayedBudget}
                 </Text>
               </View>
@@ -329,7 +352,7 @@ export default function DashboardScreen() {
           </View>
 
           {overBudgetCategory && (
-            <Text style={{ fontSize: 16, color: "orange", marginTop: 10 }}>
+            <Text style={styles.overBudgetText}>
               Over budget by ${overBudgetAmount.toFixed(2)} in{" "}
               {overBudgetCategory.name}
             </Text>
@@ -378,13 +401,13 @@ export default function DashboardScreen() {
         </View>
 
         {/* Expenses List */}
-        <Text style={styles.expensesTitle}>Recent Expenses</Text>
-        <View style={styles.addExpenseContainer}>
+        <Text style={styles.sectionTitle}>Recent Expenses</Text>
+        <View style={styles.addSectionContainer}>
           <TouchableOpacity
-            style={styles.addExpenseButton}
+            style={styles.addButton}
             onPress={() => router.push("/AddExpense")}
           >
-            <Ionicons name="add" size={36} color="white" />
+            <Ionicons name="receipt-outline" size={36} color="white" />
             <Text style={styles.addExpenseText}>Add Expense</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -399,19 +422,56 @@ export default function DashboardScreen() {
         <FlatList
           data={expenses}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.expenseList}
+          contentContainerStyle={styles.listContainer}
+          scrollEnabled={false}
+          style={{ height: Math.min(expenses.length * 60, 200) }}
           renderItem={({ item }) => (
-            <View style={styles.expenseItem}>
+            <View style={styles.listItem}>
               <View>
-                <Text style={styles.expenseName}>{item.name}</Text>
+                <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.expenseCategory}>{item.category_name}</Text>
               </View>
-              <Text style={styles.expenseAmount}>
-                ${item.amount.toFixed(2)}
+              <Text style={[styles.itemAmount, { color: "#EF4444" }]}>
+                -${item.amount.toFixed(2)}
               </Text>
             </View>
           )}
         />
+
+        {/* Income List */}
+        <Text style={styles.sectionTitle}>Recent Income</Text>
+        <View style={styles.addSectionContainer}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => router.push("/AddIncome")}
+          >
+            <Ionicons name="cash-outline" size={36} color="white" />
+            <Text style={styles.addExpenseText}>Add Income</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={incomes}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          scrollEnabled={false}
+          style={{ height: Math.min(expenses.length * 60, 200) }}
+          renderItem={({ item }) => (
+            <View style={styles.listItem}>
+              <View>
+                <Text style={styles.itemName}>{item.name}</Text>
+                {item.date && (
+                  <Text style={styles.itemDate}>{formatDate(item.date)}</Text>
+                )}
+              </View>
+              <Text style={[styles.itemAmount, { color: "#10B981" }]}>
+                +${item.amount.toFixed(2)}
+              </Text>
+            </View>
+          )}
+        />
+
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -455,7 +515,79 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sidebarButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-
+  summaryContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
+    marginHorizontal: 20,
+  },
+  chartContainer: {
+    alignItems: "center", 
+    marginVertical: 20
+  },
+  chartTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  chartRing: {
+    width: 220,
+    height: 220,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 110,
+    padding: 10,
+  },
+  chartTextContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chartAmountContainer: {
+    alignItems: "center"
+  },
+  chartAmountSpent: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white"
+  },
+  chartAmountOf: {
+    fontSize: 16,
+    color: "white"
+  },
+  chartAmountBudget: {
+    fontSize: 18,
+    color: "white"
+  },
+  overBudgetText: {
+    fontSize: 16,
+    color: "orange",
+    marginTop: 10
+  },
+  summaryCard: {
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    padding: 15,
+    alignItems: "center",
+    width: "45%",
+  },
+  summaryLabel: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    marginTop: 5,
+  },
+  summaryAmount: {
+    fontSize: 18, 
+    fontWeight: "bold",
+    marginTop: 5,
+  },
   logoutButton: { marginTop: 20 },
   logoutText: { fontSize: 18, color: "red" },
   backdrop: {
@@ -491,15 +623,15 @@ const styles = StyleSheet.create({
   },
   categoryName: { color: "#fff", fontSize: 14, fontWeight: "bold" },
   categoryBudget: { color: "#fff", fontSize: 12 },
-  expensesTitle: {
+  sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 20,
     marginLeft: 20,
     color: "#E6F0FF",
   },
-  expenseList: { paddingHorizontal: 20, paddingTop: 10 },
-  expenseItem: {
+  listContainer: { paddingHorizontal: 20, paddingTop: 10 },
+  listItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -507,15 +639,16 @@ const styles = StyleSheet.create({
     borderBottomColor: "#374151",
     borderBottomWidth: 1,
   },
-  expenseName: { fontSize: 16, fontWeight: "bold", color: "#E6F0FF" },
+  itemName: { fontSize: 16, fontWeight: "bold", color: "#E6F0FF" },
   expenseCategory: { fontSize: 12, color: "#9CA3AF" },
-  expenseAmount: { fontSize: 16, fontWeight: "bold", color: "#10B981" },
-  addExpenseContainer: {
+  itemAmount: { fontSize: 16, fontWeight: "bold", color: "#10B981" },
+  itemDate: { fontSize: 12, color: "#9CA3AF" },
+  addSectionContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginVertical: 20,
   },
-  addExpenseButton: {
+  addButton: {
     width: 140,
     height: 90,
     borderRadius: 12,

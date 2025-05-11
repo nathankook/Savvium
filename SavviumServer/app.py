@@ -177,13 +177,14 @@ def get_user_categories(user_id):
     } for c in categories]
     return jsonify(result)
 
+# Create a new income entry
 @app.route('/incomes', methods=['POST'])
 def add_income():
     data = request.get_json()
     user_id = data.get('user_id')
-    name = data.get('name')  # 'name' instead of 'source'
+    name = data.get('name')
     amount = data.get('amount')
-    date_str = data.get('date')  # optional
+    date_str = data.get('date')
 
     if not user_id or not name or not amount:
         return jsonify({'message': 'Missing required fields'}), 400
@@ -204,6 +205,20 @@ def add_income():
         db.session.rollback()
         return jsonify({'message': 'Error saving income', 'error': str(e)}), 500
 
+# Get all income entries of a user
+@app.route('/users/<int:user_id>/incomes', methods=['GET'])
+def get_user_incomes(user_id):
+    incomes = Income.query.filter_by(user_id=user_id).all()
+    result = [{
+        "id": i.id,
+        "user_id": i.user_id,
+        "name": i.name,
+        "amount": i.amount,
+        "date": i.date.isoformat() if hasattr(i, 'date') and i.date else None
+    } for i in incomes]
+    return jsonify(result)
+
+# Create a new recurring expense
 @app.route('/recurring-expenses', methods=['POST'])
 def add_recurring_expense():
     data = request.get_json()
@@ -232,6 +247,7 @@ def add_recurring_expense():
         db.session.rollback()
         return jsonify({'message': 'Error saving expense', 'error': str(e)}), 500
 
+# Get recurring expenses
 @app.route('/recurring-expenses', methods=['GET'])
 def get_recurring_expenses():
     try:
@@ -248,6 +264,7 @@ def get_recurring_expenses():
     except Exception as e:
         return jsonify({'message': 'Error fetching expenses', 'error': str(e)}), 500
 
+# Update recurring expense
 @app.route('/recurring-expenses/<int:expense_id>', methods=['PATCH'])
 def update_recurring_expense(expense_id):
     data = request.get_json()
@@ -261,6 +278,7 @@ def update_recurring_expense(expense_id):
     db.session.commit()
     return jsonify({'message': 'Recurring expense updated'})
 
+# Delete recurring expense
 @app.route('/recurring-expenses/<int:expense_id>', methods=['DELETE'])
 def delete_recurring_expense(expense_id):
     expense = RecurringExpense.query.get_or_404(expense_id)

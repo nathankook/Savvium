@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   menuButton: {
       padding: 8,
   },
-  title: { fontSize: 24, fontWeight: "bold", color: "white", marginBottom: 10 },
+  title: { fontSize: 20, fontWeight: "bold", color: "white", marginBottom: 10 },
   input: {
     backgroundColor: "#1F2937",
     color: "white",
