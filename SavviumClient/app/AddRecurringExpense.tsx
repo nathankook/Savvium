@@ -8,6 +8,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { router, useFocusEffect } from "expo-router";
@@ -141,204 +142,212 @@ export default function AddRecurringExpenseScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Add Recurring Expense</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Expense Name"
-        placeholderTextColor="#9CA3AF"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Amount"
-        placeholderTextColor="#9CA3AF"
-        keyboardType="numeric"
-        value={amount}
-        onChangeText={setAmount}
-      />
-
-      <TouchableOpacity
-        onPress={() => setCalendarVisible(!calendarVisible)}
-        style={styles.datePickerInput}
-      >
-        <Text style={{ color: selectedDate ? "white" : "#9CA3AF" }}>
-          {selectedDate ? formatDateDisplay(selectedDate) : "Select Due Date"}
-        </Text>
-      </TouchableOpacity>
-
-      {calendarVisible && (
-        <Calendar
-          onDayPress={(day) => {
-            setSelectedDate(day.dateString);
-            setCalendarVisible(false);
-          }}
-          markedDates={
-            selectedDate
-              ? { [selectedDate]: { selected: true, selectedColor: "#4F46E5" } }
-              : {}
-          }
-          theme={{
-            calendarBackground: "#1F2937",
-            dayTextColor: "#FFF",
-            monthTextColor: "#FFF",
-            arrowColor: "#FFF",
-          }}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.navBar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.menuButton}>
+            <Ionicons name="arrow-back" size={28} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Add Recurring Expense</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Expense Name"
+          placeholderTextColor="#9CA3AF"
+          value={name}
+          onChangeText={setName}
         />
-      )}
+        <TextInput
+          style={styles.input}
+          placeholder="Amount"
+          placeholderTextColor="#9CA3AF"
+          keyboardType="numeric"
+          value={amount}
+          onChangeText={setAmount}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleAddExpense}>
-        <Text style={styles.buttonText}>Save Recurring Expense</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setCalendarVisible(!calendarVisible)}
+          style={styles.datePickerInput}
+        >
+          <Text style={{ color: selectedDate ? "white" : "#9CA3AF" }}>
+            {selectedDate ? formatDateDisplay(selectedDate) : "Select Due Date"}
+          </Text>
+        </TouchableOpacity>
 
-      <Text style={[styles.title, { marginTop: 20 }]}>Recurring Bills</Text>
-      <FlatList
-        data={recurringExpenses}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.recurringItem}>
-            <TouchableOpacity
-              onPress={() =>
-                setDropdownVisibleId(
-                  dropdownVisibleId === item.id ? null : item.id
-                )
-              }
-            >
-              <View style={styles.billHeader}>
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-    <Ionicons name="chevron-down-outline" size={16} color="white" style={{ marginRight: 6 }} />
-    <Text style={styles.billNameText}>{item.name}</Text>
+        {calendarVisible && (
+          <Calendar
+            onDayPress={(day) => {
+              setSelectedDate(day.dateString);
+              setCalendarVisible(false);
+            }}
+            markedDates={
+              selectedDate
+                ? { [selectedDate]: { selected: true, selectedColor: "#4F46E5" } }
+                : {}
+            }
+            theme={{
+              calendarBackground: "#1F2937",
+              dayTextColor: "#FFF",
+              monthTextColor: "#FFF",
+              arrowColor: "#FFF",
+            }}
+          />
+        )}
+
+        <TouchableOpacity style={styles.button} onPress={handleAddExpense}>
+          <Text style={styles.buttonText}>Save Recurring Expense</Text>
+        </TouchableOpacity>
+
+        <Text style={[styles.title, { marginTop: 20 }]}>Recurring Bills</Text>
+        <FlatList
+          data={recurringExpenses}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.recurringItem}>
+              <TouchableOpacity
+                onPress={() =>
+                  setDropdownVisibleId(
+                    dropdownVisibleId === item.id ? null : item.id
+                  )
+                }
+              >
+                <View style={styles.billHeader}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Ionicons name="chevron-down-outline" size={16} color="white" style={{ marginRight: 6 }} />
+      <Text style={styles.billNameText}>{item.name}</Text>
+    </View>
   </View>
-</View>
 
-              <Text style={styles.recurringText}>
-                ${item.amount.toFixed(2)}
-              </Text>
-              <Text style={styles.recurringText}>
-                Due: {getUpcomingDueDate(item.due_day)}
-              </Text>
-            </TouchableOpacity>
-            {dropdownVisibleId === item.id && (
-              <View style={{ marginTop: 10 }}>
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => {
-                    setSelectedBill(item);
-                    setEditDateVisible(true);
-                  }}
-                >
-                  <Text style={styles.dropdownButtonText}>Edit Date</Text>
+                <Text style={styles.recurringText}>
+                  ${item.amount.toFixed(2)}
+                </Text>
+                <Text style={styles.recurringText}>
+                  Due: {getUpcomingDueDate(item.due_day)}
+                </Text>
+              </TouchableOpacity>
+              {dropdownVisibleId === item.id && (
+                <View style={{ marginTop: 10 }}>
+                  <TouchableOpacity
+                    style={styles.dropdownButton}
+                    onPress={() => {
+                      setSelectedBill(item);
+                      setEditDateVisible(true);
+                    }}
+                  >
+                    <Text style={styles.dropdownButtonText}>Edit Date</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownButton}
+                    onPress={() => {
+                      setSelectedBill(item);
+                      setNewAmount(item.amount.toString());
+                      setEditAmountVisible(true);
+                    }}
+                  >
+                    <Text style={styles.dropdownButtonText}>Edit Amount</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownButton}
+                    onPress={() => {
+                      setSelectedBill(item);
+                      setConfirmDeleteVisible(true);
+                    }}
+                  >
+                    <Text style={[styles.dropdownButtonText, { color: "red" }]}>
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Edit Date Modal */}
+        <Modal visible={editDateVisible} transparent animationType="none">
+          <View style={styles.modalBackground}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Edit Due Date</Text>
+              <Calendar
+                onDayPress={(day) => setNewDate(day.dateString)}
+                markedDates={{
+                  [newDate]: { selected: true, selectedColor: "#4F46E5" },
+                }}
+                theme={{ calendarBackground: "#1F2937", dayTextColor: "#FFF" }}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.saveBtn} onPress={handleSaveDate}>
+                  <Text style={styles.modalBtnText}>Save</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => {
-                    setSelectedBill(item);
-                    setNewAmount(item.amount.toString());
-                    setEditAmountVisible(true);
-                  }}
+                  style={styles.cancelBtn}
+                  onPress={() => setEditDateVisible(false)}
                 >
-                  <Text style={styles.dropdownButtonText}>Edit Amount</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => {
-                    setSelectedBill(item);
-                    setConfirmDeleteVisible(true);
-                  }}
-                >
-                  <Text style={[styles.dropdownButtonText, { color: "red" }]}>
-                    Delete
-                  </Text>
+                  <Text style={styles.modalBtnText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
-            )}
-          </View>
-        )}
-      />
-
-      {/* Edit Date Modal */}
-      <Modal visible={editDateVisible} transparent animationType="none">
-        <View style={styles.modalBackground}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Edit Due Date</Text>
-            <Calendar
-              onDayPress={(day) => setNewDate(day.dateString)}
-              markedDates={{
-                [newDate]: { selected: true, selectedColor: "#4F46E5" },
-              }}
-              theme={{ calendarBackground: "#1F2937", dayTextColor: "#FFF" }}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveDate}>
-                <Text style={styles.modalBtnText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setEditDateVisible(false)}
-              >
-                <Text style={styles.modalBtnText}>Cancel</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* Edit Amount Modal */}
-      <Modal visible={editAmountVisible} transparent animationType="none">
-        <View style={styles.modalBackground}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Edit Amount</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={newAmount}
-              onChangeText={setNewAmount}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.saveBtn}
-                onPress={handleSaveAmount}
-              >
-                <Text style={styles.modalBtnText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setEditAmountVisible(false)}
-              >
-                <Text style={styles.modalBtnText}>Cancel</Text>
-              </TouchableOpacity>
+        {/* Edit Amount Modal */}
+        <Modal visible={editAmountVisible} transparent animationType="none">
+          <View style={styles.modalBackground}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Edit Amount</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={newAmount}
+                onChangeText={setNewAmount}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.saveBtn}
+                  onPress={handleSaveAmount}
+                >
+                  <Text style={styles.modalBtnText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setEditAmountVisible(false)}
+                >
+                  <Text style={styles.modalBtnText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* Confirm Delete Modal */}
-      <Modal visible={confirmDeleteVisible} transparent animationType="none">
-        <View style={styles.modalBackground}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>
-              Are you sure you want to delete this bill?
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleDelete}>
-                <Text style={styles.modalBtnText}>Continue</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setConfirmDeleteVisible(false)}
-              >
-                <Text style={styles.modalBtnText}>Cancel</Text>
-              </TouchableOpacity>
+        {/* Confirm Delete Modal */}
+        <Modal visible={confirmDeleteVisible} transparent animationType="none">
+          <View style={styles.modalBackground}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>
+                Are you sure you want to delete this bill?
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.saveBtn} onPress={handleDelete}>
+                  <Text style={styles.modalBtnText}>Continue</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setConfirmDeleteVisible(false)}
+                >
+                  <Text style={styles.modalBtnText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#111827" },
   container: { flex: 1, padding: 20, backgroundColor: "#111827" },
   dropdownButton: {
     backgroundColor: "#374151",
@@ -352,7 +361,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
-  title: { fontSize: 20, fontWeight: "bold", color: "white", marginBottom: 10 },
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 60,
+    backgroundColor: '#111827',
+    },
+  menuButton: {
+      padding: 8,
+  },
+  title: { fontSize: 24, fontWeight: "bold", color: "white", marginBottom: 10 },
   input: {
     backgroundColor: "#1F2937",
     color: "white",

@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   input: {
