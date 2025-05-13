@@ -58,7 +58,7 @@ export default function AddRecurringExpenseScreen() {
           user_id: userId,
           name,
           amount: parseFloat(amount),
-          category_id: null,
+          category_id: 1,
           due_day: parseInt(selectedDate.split("-")[2]),
         }),
       });
@@ -79,14 +79,17 @@ export default function AddRecurringExpenseScreen() {
   };
 
   const fetchRecurringExpenses = async () => {
-    try {
-      const response = await fetch(`${LOCAL_HOST}/recurring-expenses`);
-      const data = await response.json();
-      setRecurringExpenses(data);
-    } catch (error) {
-      console.error("Error fetching recurring expenses:", error);
-    }
-  };
+  if (!userId) return;
+
+  try {
+    const response = await fetch(`${LOCAL_HOST}/recurring-expenses?user_id=${userId}`);
+    const data = await response.json();
+    setRecurringExpenses(data);
+  } catch (error) {
+    console.error("Error fetching recurring expenses:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchRecurringExpenses();
@@ -108,8 +111,10 @@ export default function AddRecurringExpenseScreen() {
   };
 
   const formatDateDisplay = (isoDate: string) => {
-    const date = new Date(isoDate);
-    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    const [year, month, day] = isoDate.split("-").map(Number);
+    return `${new Date(Date.UTC(year, month - 1, day)).toLocaleString("en-US", {
+      month: "long",
+    })} ${day}`;
   };
 
   const handleSaveDate = async () => {

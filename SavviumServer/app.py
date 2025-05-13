@@ -250,8 +250,13 @@ def add_recurring_expense():
 # Get recurring expenses
 @app.route('/recurring-expenses', methods=['GET'])
 def get_recurring_expenses():
+    user_id = request.args.get('user_id', type=int)
+
+    if user_id is None:
+        return jsonify({'message': 'Missing user_id in query parameters'}), 400
+
     try:
-        expenses = RecurringExpense.query.all()
+        expenses = RecurringExpense.query.filter_by(user_id=user_id).all()
         result = [{
             'id': e.id,
             'name': e.name,
@@ -263,6 +268,7 @@ def get_recurring_expenses():
         return jsonify(result), 200
     except Exception as e:
         return jsonify({'message': 'Error fetching expenses', 'error': str(e)}), 500
+
 
 # Update recurring expense
 @app.route('/recurring-expenses/<int:expense_id>', methods=['PATCH'])

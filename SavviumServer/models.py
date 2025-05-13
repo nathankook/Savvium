@@ -58,3 +58,13 @@ class RecurringExpense(db.Model):
 
     user = db.relationship('User', backref='recurring_expenses')
     category = db.relationship('BudgetCategory', backref='recurring_expenses')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'amount': self.amount,
+            'category_id': self.category_id,
+            'due_day': self.due_day,
+        }
