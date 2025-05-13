@@ -66,7 +66,6 @@ def update_expense(expense_id):
     if "amount" in data:
         expense.amount = data["amount"]
     if "date" in data:
-        # Convert from string to date
         expense.date = datetime.strptime(data["date"], "%Y-%m-%d").date()
 
     db.session.commit()
@@ -122,7 +121,8 @@ def get_user_expenses(user_id):
         "category_id": e.category_id,
         "name": e.name,
         "amount": e.amount,
-        "category_name": e.category.name
+        "category_name": e.category.name,
+        "date": e.date,
     } for e in expenses]
     return jsonify(result)
 
@@ -134,7 +134,8 @@ def get_expenses_by_category(category_id):
         "id": e.id,
         "category_id": e.category_id,
         "name": e.name,
-        "amount": e.amount
+        "amount": e.amount,
+        "date": e.date
     } for e in expenses]
     return jsonify(result)
 

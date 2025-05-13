@@ -32,6 +32,7 @@ export type Expense = {
   name: string;
   amount: number;
   category_name: string;
+  date: string;
 };
 
 export type Income = {
@@ -76,7 +77,20 @@ export default function DashboardScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setExpenses(data);
+      
+      const expensesWithDates = data.map((expense: Expense) => {
+        if (!expense.date) {
+          console.log("Found expense without date:", expense.id);
+          return { ...expense, date: new Date().toISOString() };
+        }
+        return expense;
+      });
+      
+      const sortedExpenses = expensesWithDates.sort((a: Expense, b: Expense) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      
+      setExpenses(sortedExpenses);
     } catch (error) {
       console.error("Error fetching expenses:", error);
     }
@@ -89,7 +103,10 @@ export default function DashboardScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setIncomes(data);
+      const sortedIncomes = data.sort((a: Income, b: Income) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      setIncomes(sortedIncomes);
     } catch (error) {
       console.error("Error fetching incomes:", error);
     }
@@ -182,7 +199,7 @@ export default function DashboardScreen() {
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-    const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+  const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
 
   const isAnyCategoryOverBudget = categories.some((category) => {
     const categoryExpenses = expenses.filter(
@@ -415,7 +432,7 @@ export default function DashboardScreen() {
             onPress={() => router.push("/AddRecurringExpense")}
           >
             <Ionicons name="repeat" size={36} color="white" />
-            <Text style={styles.addExpenseText}>Add Recurring Expense</Text>
+            <Text style={styles.addExpenseText}>Add Recurring{"\n"}Expense</Text>
           </TouchableOpacity>
         </View>
 
@@ -424,12 +441,16 @@ export default function DashboardScreen() {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
           scrollEnabled={false}
-          style={{ height: Math.min(expenses.length * 60, 200) }}
+          style={{ height: expenses.length * 80 }}
           renderItem={({ item }) => (
             <View style={styles.listItem}>
               <View>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.expenseCategory}>{item.category_name}</Text>
+                <Text style={styles.itemDate}>
+                  <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
+                  {" "}{formatDate(item.date)}
+                </Text>
               </View>
               <Text style={[styles.itemAmount, { color: "#EF4444" }]}>
                 -${item.amount.toFixed(2)}
@@ -455,14 +476,15 @@ export default function DashboardScreen() {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
           scrollEnabled={false}
-          style={{ height: Math.min(expenses.length * 60, 200) }}
+          style={{ height: incomes.length * 70 }}
           renderItem={({ item }) => (
             <View style={styles.listItem}>
               <View>
                 <Text style={styles.itemName}>{item.name}</Text>
-                {item.date && (
-                  <Text style={styles.itemDate}>{formatDate(item.date)}</Text>
-                )}
+                <Text style={styles.itemDate}>
+                  <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
+                  {" "}{formatDate(item.date)}
+                </Text>
               </View>
               <Text style={[styles.itemAmount, { color: "#10B981" }]}>
                 +${item.amount.toFixed(2)}
@@ -634,15 +656,33 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
+    alignItems: "flex-start",
+    paddingVertical: 12,
     borderBottomColor: "#374151",
     borderBottomWidth: 1,
   },
-  itemName: { fontSize: 16, fontWeight: "bold", color: "#E6F0FF" },
-  expenseCategory: { fontSize: 12, color: "#9CA3AF" },
-  itemAmount: { fontSize: 16, fontWeight: "bold", color: "#10B981" },
-  itemDate: { fontSize: 12, color: "#9CA3AF" },
+  itemName: { 
+    fontSize: 16, 
+    fontWeight: "bold", 
+    color: "#E6F0FF",
+    marginBottom: 2
+  },
+  expenseCategory: { 
+    fontSize: 12, 
+    color: "#9CA3AF",
+    marginBottom: 2
+  },
+  itemAmount: { 
+    fontSize: 16, 
+    fontWeight: "bold", 
+    color: "#10B981" 
+  },
+  itemDate: { 
+    fontSize: 12, 
+    color: "#9CA3AF",
+    flexDirection: "row",
+    alignItems: "center",
+  },
   addSectionContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -675,6 +715,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 8,
+    textAlign: "center",
   },
   userInfo: {
     marginTop: 20,
